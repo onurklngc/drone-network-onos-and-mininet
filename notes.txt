@@ -1,0 +1,15 @@
+Bağlama
+py net.addLink("s1","s2", bw=1000)
+py s1.attach(s1.connectionsTo( s2 )[0][0])
+py s2.attach(s2.connectionsTo( s1 )[0][0])
+
+Koparma
+py s2.detach(s2.connectionsTo( s1 )[0][0])
+
+
+py h2.intf().config(bw = 1000)
+
+py s2.connectionsTo( s1 )[0][0].config(bw = 1000)
+py s2.connectionsTo( h2 )[0][0].config(bw = 1000)
+
+h1 echo "1;2;3" | nc 127.0.0.1 8001

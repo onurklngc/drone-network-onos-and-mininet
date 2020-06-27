@@ -1,0 +1,984 @@
+{
+    "devices": [
+        {
+            "name": "of:000000000000000c",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658598,
+                            "latest": 633,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658598,
+                            "latest": 695,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658598,
+                            "latest": 255,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658598,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658598,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658598,
+                            "latest": 15655,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:000000000000000d",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658599,
+                            "latest": 646,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658599,
+                            "latest": 694,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658599,
+                            "latest": 266,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658599,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658599,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658599,
+                            "latest": 15868,
+                            "average": 33
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:000000000000000a",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658599,
+                            "latest": 613,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658599,
+                            "latest": 697,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658599,
+                            "latest": 261,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658599,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658599,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658599,
+                            "latest": 15669,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:000000000000000b",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658600,
+                            "latest": 645,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658600,
+                            "latest": 696,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658600,
+                            "latest": 261,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658600,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658600,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658600,
+                            "latest": 15539,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:000000000000000e",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658598,
+                            "latest": 634,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658598,
+                            "latest": 257,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658598,
+                            "latest": 261,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658598,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658598,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658598,
+                            "latest": 15781,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:000000000000000f",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658599,
+                            "latest": 610,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658599,
+                            "latest": 695,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658599,
+                            "latest": 266,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658599,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658599,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658599,
+                            "latest": 15814,
+                            "average": 33
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000010",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658598,
+                            "latest": 655,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658598,
+                            "latest": 695,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658598,
+                            "latest": 255,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658598,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658598,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658598,
+                            "latest": 15655,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000011",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658598,
+                            "latest": 638,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658598,
+                            "latest": 689,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658598,
+                            "latest": 265,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658598,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658598,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658598,
+                            "latest": 15716,
+                            "average": 33
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000014",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658599,
+                            "latest": 653,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658599,
+                            "latest": 695,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658599,
+                            "latest": 257,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658599,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658599,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658599,
+                            "latest": 15661,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000003",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658600,
+                            "latest": 636,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658600,
+                            "latest": 690,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658600,
+                            "latest": 257,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658600,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658600,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658600,
+                            "latest": 15661,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000004",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658600,
+                            "latest": 636,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658600,
+                            "latest": 690,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658600,
+                            "latest": 257,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658600,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658600,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658600,
+                            "latest": 15661,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000012",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658598,
+                            "latest": 635,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658598,
+                            "latest": 249,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658598,
+                            "latest": 257,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658598,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658598,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658598,
+                            "latest": 15661,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000001",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658598,
+                            "latest": 628,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658598,
+                            "latest": 681,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658598,
+                            "latest": 266,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658598,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658598,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658598,
+                            "latest": 15743,
+                            "average": 33
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000013",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658598,
+                            "latest": 653,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658598,
+                            "latest": 694,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658598,
+                            "latest": 265,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658598,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658598,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658598,
+                            "latest": 15686,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000002",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658599,
+                            "latest": 625,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658599,
+                            "latest": 690,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658599,
+                            "latest": 257,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658599,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658599,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658599,
+                            "latest": 15661,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000007",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658598,
+                            "latest": 631,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658598,
+                            "latest": 685,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658598,
+                            "latest": 255,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658598,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658598,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658598,
+                            "latest": 15396,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000008",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658599,
+                            "latest": 623,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658599,
+                            "latest": 690,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658599,
+                            "latest": 257,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658599,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658599,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658599,
+                            "latest": 15661,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000005",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658599,
+                            "latest": 619,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658599,
+                            "latest": 692,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658599,
+                            "latest": 260,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658599,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658599,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658599,
+                            "latest": 15670,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000006",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658601,
+                            "latest": 618,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658601,
+                            "latest": 689,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658601,
+                            "latest": 265,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658601,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658601,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658601,
+                            "latest": 15689,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "of:0000000000000009",
+            "value": {
+                "metrics": [
+                    {
+                        "inboundPacket": {
+                            "time": 1573658600,
+                            "latest": 653,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "outboundPacket": {
+                            "time": 1573658600,
+                            "latest": 692,
+                            "average": 1
+                        }
+                    },
+                    {
+                        "flowModPacket": {
+                            "time": 1573658600,
+                            "latest": 263,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "flowRemovedPacket": {
+                            "time": 1573658600,
+                            "latest": 0,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "requestPacket": {
+                            "time": 1573658600,
+                            "latest": 64,
+                            "average": 0
+                        }
+                    },
+                    {
+                        "replyPacket": {
+                            "time": 1573658600,
+                            "latest": 15684,
+                            "average": 32
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
