@@ -39,7 +39,7 @@ legend_elements = [content_server_figure, depleted_uav_figure]
 #         battery_levels[int(float(row[0]))] = [float(i) for i in row[1:] if len(i) != 0]
 def truncate_colormap(color_map, min_val=0.0, max_val=1.0, n=100):
     new_color_map = colors.LinearSegmentedColormap.from_list(
-        'trunc({n},{a:.2f},{b:.2f})'.format(n=color_map.name, a=min_val, b=max_val),
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=color_map.sumo_id, a=min_val, b=max_val),
         color_map(np.linspace(min_val, max_val, n)))
     return new_color_map
 

@@ -2,8 +2,8 @@
 
 import os
 import subprocess
+from signal import SIGINT, SIGTERM, SIGKILL
 import traceback
-from signal import SIGINT, SIGTERM
 
 
 def kill_process(name, ps_parameter, signal_type):
@@ -24,11 +24,15 @@ def stop_children_processes(processes):
     for p in processes:
         p.send_signal(SIGINT)
     for signalType in [SIGINT, SIGTERM, 9]:
-        kill_process('main_v2', 'ax', signalType)
-        kill_process('sumo-gui', 'ax', signalType)
-        kill_process('xterm', 'ax', signalType)
+        kill_process('iperf', 'A', signalType)
+        kill_process('ITGRecv', 'A', signalType)
+        kill_process('ITGSend', 'A', signalType)
+        kill_process('media_server', 'x', signalType)
+        kill_process('streamer_host', 'x', signalType)
+        os.system("pkill ITGRecv")
+        os.system("pkill ITGSend")
+        os.system("pkill iperf")
 
 
 if __name__ == '__main__':
     stop_children_processes([])
-    p = subprocess.call(['mn', '-c'])

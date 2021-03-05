@@ -1,9 +1,3 @@
-import requests
-
-from network_utils import host_ip_to_mac
-from settings import CONTROLLER_IP
-import json
-
 DEBUG = True
 
 

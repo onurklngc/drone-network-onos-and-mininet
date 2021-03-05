@@ -77,9 +77,11 @@ class IntentManager(object):
 
 if __name__ == '__main__':
     link_manager = IntentManager()
-    link_manager.create_host_2_host_intent("10.0.0.1", "10.0.5.1")
-    link_manager.delete_host_2_host_intent("10.0.0.1", "10.0.5.1")
-    link_manager.create_host_2_host_intent("10.0.0.3", "10.0.9.1")
-    link_manager.delete_host_2_host_intent("10.0.0.3", "10.0.9.1")
+    # link_manager.create_host_2_host_intent("10.0.0.1", "10.0.5.1")
+    link_manager.create_host_2_host_intent("10.0.0.1", "10.0.0.3")
+    # link_manager.delete_host_2_host_intent("10.0.0.1", "10.0.0.2")
+    # link_manager.delete_host_2_host_intent("10.0.0.1", "10.0.5.1")
+    # link_manager.create_host_2_host_intent("10.0.0.3", "10.0.9.1")
+    # link_manager.delete_host_2_host_intent("10.0.0.3", "10.0.9.1")
     # link_manager.delete_host_2_host_intent_by_key("10.0.0.3-10.0.1.9")
 

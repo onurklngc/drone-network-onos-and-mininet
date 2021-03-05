@@ -4,7 +4,7 @@ from switch_manager import SwitchManager
 import controller_utils
 
 DEBUG = True
-
+# https/://github.com/opennetworkinglab/onos/blob/de82adae283e7c6182ca98d756c0de1795c85829/core/api/src/main/java/org/onosproject/net/config/basics/BasicLinkConfig.java/
 
 def debug(msg):
     if DEBUG:
@@ -36,7 +36,7 @@ class LinkManager(object):
 
     def generate_two_way_link_payload(self, interface1, interface2):
         link1, link2 = self.generate_link_names(interface1, interface2)
-        payload = {link1: {"basic": {}}, link2: {"basic": {}}}
+        payload = {link1: {"basic": {"metric": 99}}, link2: {"basic": {"metric": 99}}}
         return payload
 
     def send_two_way_link_to_controller(self, interface1, interface2):
@@ -66,6 +66,15 @@ class LinkManager(object):
 
 if __name__ == '__main__':
     link_manager = LinkManager()
-    link_manager.send_two_way_link_to_controller("s2-eth2", "s1-eth2")
-    link_manager.send_two_way_link_to_controller("s2-eth3", "s3-eth2")
-    # link_manager.delete_two_way_link_from_controller("s2", "s1", "s2-eth2", "s1-eth2")
+    # link_manager.send_two_way_link_to_controller("s2-eth2", "s3-eth2")
+    # link_manager.send_two_way_link_to_controller("s1-eth2", "s3-eth2")
+    # link_manager.send_two_way_link_to_controller("s1-eth2", "s3-eth2")
+    link_manager.send_two_way_link_to_controller("s1004-eth2", "s1005-eth2")
+    link_manager.send_two_way_link_to_controller("s1006-eth2", "s1007-eth2")
+    # link_manager.delete_two_way_link_from_controller("s1-eth2", "s2-eth2")
+    # link_manager.send_two_way_link_to_controller("s3-eth2", "s2-eth3")
+    # link_manager.send_two_way_link_to_controller("s2-eth2", "s1-eth2")
+    # link_manager.delete_two_way_link_from_controller("s3-eth2", "s1-eth2")
+    # link_manager.send_two_way_link_to_controller("s3-eth2", "s1-eth2")
+    # link_manager.delete_two_way_link_from_controller("s8-eth3", "s18-eth5")
+    # link_manager.send_two_way_link_to_controller("s2-eth3", "s3-eth2")

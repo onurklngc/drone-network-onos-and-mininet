@@ -1,7 +1,8 @@
-import requests
 import json
 
-# onos_address = "http://192.168.31.176:8181"
+import requests
+
+# ONOS_ADDRESS = "http://192.168.31.176:8181"
 onos_address = "http://localhost:8181"
 configuration_path = "/onos/v1/configuration/"
 application_path = "/onos/v1/applications/"
@@ -9,7 +10,8 @@ application_path = "/onos/v1/applications/"
 applications_to_activate = ["org.onosproject.openflow",
                             "org.onosproject.fwd",
                             "org.onosproject.cpman",
-                            "org.onosproject.mobility"]
+                            # "org.onosproject.mobility"
+                            ]
 
 payloads = {
     "org.onosproject.provider.lldp.impl.LldpLinkProvider": {
@@ -55,7 +57,7 @@ def activate_applications():
     for application in applications_to_activate:
         response = requests.request("POST", "{}{}{}/active".format(onos_address, application_path, application),
                                     headers=headers)
-    print(response.text)
+        print(response.text)
 
 
 def change_configurations():
@@ -68,3 +70,4 @@ def change_configurations():
 if __name__ == '__main__':
     activate_applications()
     change_configurations()
+    print("Completed.")

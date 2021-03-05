@@ -1,4 +1,3 @@
-import json
 import traceback
 import urllib2
 from random import sample
