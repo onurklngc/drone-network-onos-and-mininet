@@ -5,9 +5,6 @@ import logging
 import random
 import threading
 
-import matplotlib
-matplotlib.use('Agg')
-
 from mininet.log import setLogLevel, info
 from mininet.node import RemoteController, Controller
 from mn_wifi.cli import CLI
@@ -83,7 +80,7 @@ def topology(drone_mover):
     #     # new_net.addLink(car, ap1)
 
     info("*** Starting network\n")
-    new_net.plotGraph(max_x=1500, max_y=1000, min_x=0, min_y=-70)
+    # new_net.plotGraph(max_x=1500, max_y=1000, min_x=0, min_y=-70)
     new_net.build()
     c0.start()
     for enb in new_net.aps:

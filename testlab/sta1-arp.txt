@@ -1,0 +1,15 @@
+# ip -s -s neigh flush all
+10.0.0.2 dev sta1-wlan0 lladdr 00:00:00:00:00:12 ref 1 used 26/26/26 probes 4 REACHABLE
+
+*** Round 1, deleting 1 entries ***
+*** Flush is complete after 1 round ***
+# arp -n
+# ping 10.0.0.2
+PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+^C
+--- 10.0.0.2 ping statistics ---
+4 packets transmitted, 0 received, 100% packet loss, time 3053ms
+
+# arp -n
+Address                  HWtype  HWaddress           Flags Mask            Iface
+10.0.0.2                 ether   00:00:00:00:00:12   C                     sta1-wlan0

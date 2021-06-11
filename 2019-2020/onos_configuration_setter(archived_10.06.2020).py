@@ -6,6 +6,7 @@ import requests
 onos_address = "http://localhost:8181"
 configuration_path = "/onos/v1/configuration/"
 application_path = "/onos/v1/applications/"
+application_path = "/onos/v1/applications/"
 
 applications_to_activate = ["org.onosproject.openflow",
                             "org.onosproject.fwd",

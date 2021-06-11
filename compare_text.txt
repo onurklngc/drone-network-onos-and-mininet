@@ -1,0 +1,128 @@
+OFPT_PACKET_IN (OF1.3) (xid=0x0): cookie=0x10000c3268f7e total_len=42 in_port=4 (via action) data_len=42 (unbuffered)
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=ff:ff:ff:ff:ff:ff,arp_spa=10.0.0.5,arp_tpa=10.0.0.6,arp_op=1,arp_sha=00:00:00:00:00:01,arp_tha=00:00:00:00:00:00
+OFPT_PACKET_OUT (OF1.3) (xid=0x0): in_port=4 actions=FLOOD data_len=42
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=ff:ff:ff:ff:ff:ff,arp_spa=10.0.0.5,arp_tpa=10.0.0.6,arp_op=1,arp_sha=00:00:00:00:00:01,arp_tha=00:00:00:00:00:00
+OFPT_PACKET_IN (OF1.3) (xid=0x0): cookie=0x10000c3268f7e total_len=42 in_port=2 (via action) data_len=42 (unbuffered)
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:02,dl_dst=00:00:00:00:00:01,arp_spa=10.0.0.6,arp_tpa=10.0.0.5,arp_op=2,arp_sha=00:00:00:00:00:02,arp_tha=00:00:00:00:00:01
+OFPT_PACKET_OUT (OF1.3) (xid=0x0): in_port=2 actions=output:4 data_len=42
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:02,dl_dst=00:00:00:00:00:01,arp_spa=10.0.0.6,arp_tpa=10.0.0.5,arp_op=2,arp_sha=00:00:00:00:00:02,arp_tha=00:00:00:00:00:01OFPT_PACKET_IN (OF1.3) (xid=0x0): cookie=0x10000c3268f7e total_len=42 in_port=4 (via action) data_len=42 (unbuffered)
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=ff:ff:ff:ff:ff:ff,arp_spa=10.0.0.5,arp_tpa=10.0.0.6,arp_op=1,arp_sha=00:00:00:00:00:01,arp_tha=00:00:00:00:00:00
+OFPT_PACKET_OUT (OF1.3) (xid=0x0): in_port=4 actions=FLOOD data_len=42
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=ff:ff:ff:ff:ff:ff,arp_spa=10.0.0.5,arp_tpa=10.0.0.6,arp_op=1,arp_sha=00:00:00:00:00:01,arp_tha=00:00:00:00:00:00
+OFPT_PACKET_IN (OF1.3) (xid=0x0): cookie=0x10000c3268f7e total_len=42 in_port=2 (via action) data_len=42 (unbuffered)
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:02,dl_dst=00:00:00:00:00:01,arp_spa=10.0.0.6,arp_tpa=10.0.0.5,arp_op=2,arp_sha=00:00:00:00:00:02,arp_tha=00:00:00:00:00:01
+OFPT_PACKET_OUT (OF1.3) (xid=0x0): in_port=2 actions=output:4 data_len=42
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:02,dl_dst=00:00:00:00:00:01,arp_spa=10.0.0.6,arp_tpa=10.0.0.5,arp_op=2,arp_sha=00:00:00:00:00:02,arp_tha=00:00:00:00:00:01
+OFPST_PORT request (OF1.3) (xid=0xb3): port_no=ANY
+OFPST_PORT reply (OF1.3) (xid=0xb3): 5 ports
+  port LOCAL: rx pkts=0, bytes=0, drop=89, errs=0, frame=0, over=0, crc=0
+           tx pkts=0, bytes=0, drop=0, errs=0, coll=0
+           duration=1902.381s
+  port  1: rx pkts=0, bytes=0, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=952, bytes=146634, drop=0, errs=0, coll=0
+           duration=1902.391s
+  port  4: rx pkts=1778, bytes=143944, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=1929, bytes=225509, drop=0, errs=0, coll=0
+           duration=1902.395s
+  port  2: rx pkts=1931, bytes=224563, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=2204, bytes=336243, drop=0, errs=0, coll=0
+           duration=1902.393s
+  port  3: rx pkts=0, bytes=0, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=950, bytes=146316, drop=0, errs=0, coll=0
+           duration=1902.394s
+
+
+OFPT_PACKET_IN (OF1.3) (xid=0x0): cookie=0x10000021410cb total_len=42 in_port=2 (via action) data_len=42 (unbuffered)
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=ff:ff:ff:ff:ff:ff,arp_spa=10.0.0.5,arp_tpa=10.0.0.6,arp_op=1,arp_sha=00:00:00:00:00:01,arp_tha=00:00:00:00:00:00
+OFPT_PACKET_OUT (OF1.3) (xid=0x0): in_port=2 actions=FLOOD data_len=42
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=ff:ff:ff:ff:ff:ff,arp_spa=10.0.0.5,arp_tpa=10.0.0.6,arp_op=1,arp_sha=00:00:00:00:00:01,arp_tha=00:00:00:00:00:00
+OFPT_PACKET_IN (OF1.3) (xid=0x0): cookie=0x10000021410cb total_len=42 in_port=5 (via action) data_len=42 (unbuffered)
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:02,dl_dst=00:00:00:00:00:01,arp_spa=10.0.0.6,arp_tpa=10.0.0.5,arp_op=2,arp_sha=00:00:00:00:00:02,arp_tha=00:00:00:00:00:01
+OFPT_PACKET_OUT (OF1.3) (xid=0x0): in_port=5 actions=output:2 data_len=42
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:02,dl_dst=00:00:00:00:00:01,arp_spa=10.0.0.6,arp_tpa=10.0.0.5,arp_op=2,arp_sha=00:00:00:00:00:02,arp_tha=00:00:00:00:00:01
+OFPST_PORT request (OF1.3) (xid=0xbb): port_no=ANY
+OFPST_PORT reply (OF1.3) (xid=0xbb): 6 ports
+  port LOCAL: rx pkts=0, bytes=0, drop=95, errs=0, frame=0, over=0, crc=0
+           tx pkts=0, bytes=0, drop=0, errs=0, coll=0
+           duration=1942.315s
+  port  1: rx pkts=0, bytes=0, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=966, bytes=149454, drop=0, errs=0, coll=0
+           duration=1942.324s
+  port  4: rx pkts=946, bytes=132599, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=1039, bytes=171614, drop=0, errs=0, coll=0
+           duration=1942.325s
+  port  2: rx pkts=2067, bytes=238519, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=1979, bytes=305823, drop=0, errs=0, coll=0
+           duration=1942.324s
+  port  5: rx pkts=1133, bytes=102866, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=2057, bytes=238641, drop=0, errs=0, coll=0
+           duration=1942.326s
+  port  3: rx pkts=945, bytes=132513, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=1042, bytes=172113, drop=0, errs=0, coll=0
+           duration=1942.324s
+
+
+root@onur-HP-EliteBook-840-G1:/home/onur# ovs-ofctl dump-ports ap2
+OFPST_PORT reply (xid=0x2): 6 ports
+  port LOCAL: rx pkts=0, bytes=0, drop=95, errs=0, frame=0, over=0, crc=0
+           tx pkts=0, bytes=0, drop=0, errs=0, coll=0
+  port  1: rx pkts=0, bytes=0, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=1106, bytes=171714, drop=0, errs=0, coll=0
+  port  4: rx pkts=1087, bytes=152262, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=1180, bytes=195783, drop=0, errs=0, coll=0
+  port  2: rx pkts=2212, bytes=258518, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=2124, bytes=330504, drop=0, errs=0, coll=0
+  port  5: rx pkts=1137, bytes=103202, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=2202, bytes=258780, drop=0, errs=0, coll=0
+  port  3: rx pkts=1086, bytes=152176, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=1183, bytes=196282, drop=0, errs=0, coll=0
+root@onur-HP-EliteBook-840-G1:/home/onur# ovs-ofctl dump-ports ap1
+OFPST_PORT reply (xid=0x2): 5 ports
+  port LOCAL: rx pkts=0, bytes=0, drop=90, errs=0, frame=0, over=0, crc=0
+           tx pkts=0, bytes=0, drop=0, errs=0, coll=0
+  port  1: rx pkts=0, bytes=0, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=1131, bytes=174996, drop=0, errs=0, coll=0
+  port  4: rx pkts=1788, bytes=144756, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=2118, bytes=251444, drop=0, errs=0, coll=0
+  port  2: rx pkts=2120, bytes=250320, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=2393, bytes=368150, drop=0, errs=0, coll=0
+  port  3: rx pkts=0, bytes=0, drop=0, errs=0, frame=0, over=0, crc=0
+           tx pkts=1129, bytes=174678, drop=0, errs=0, coll=0
+
+
+
+Local controller AP1
+OFPT_PACKET_IN (xid=0x0): total_len=42 in_port=1 (via no_match) data_len=42 buffer=0x00000139
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:11,dl_dst=ff:ff:ff:ff:ff:ff,arp_spa=10.0.0.1,arp_tpa=10.0.0.2,arp_op=1,arp_sha=00:00:00:00:00:11,arp_tha=00:00:00:00:00:00
+OFPT_PACKET_OUT (xid=0x0): in_port=1 actions=FLOOD buffer=0x00000139
+OFPT_PACKET_IN (xid=0x0): total_len=42 in_port=2 (via no_match) data_len=42 buffer=0x0000013a
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:12,dl_dst=00:00:00:00:00:11,arp_spa=10.0.0.2,arp_tpa=10.0.0.1,arp_op=2,arp_sha=00:00:00:00:00:12,arp_tha=00:00:00:00:00:11
+2021-03-28T13:38:44Z|00007|ofp_util|INFO|normalization changed ofp_match, details:
+2021-03-28T13:38:44Z|00008|ofp_util|INFO| pre: arp,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:12,dl_dst=00:00:00:00:00:11,arp_spa=10.0.0.2,arp_tpa=10.0.0.1,arp_op=2,nw_tos=0,tp_src=0,tp_dst=0
+2021-03-28T13:38:44Z|00009|ofp_util|INFO|post: arp,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:12,dl_dst=00:00:00:00:00:11,arp_spa=10.0.0.2,arp_tpa=10.0.0.1,arp_op=2
+OFPT_FLOW_MOD (xid=0x0): ADD priority=65535,arp,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:12,dl_dst=00:00:00:00:00:11,arp_spa=10.0.0.2,arp_tpa=10.0.0.1,arp_op=2 idle:60 buf:0x13a out_port:0 actions=output:1
+OFPT_PACKET_IN (xid=0x0): total_len=98 in_port=1 (via no_match) data_len=98 buffer=0x0000013b
+icmp,vlan_tci=0x0000,dl_src=00:00:00:00:00:11,dl_dst=00:00:00:00:00:12,nw_src=10.0.0.1,nw_dst=10.0.0.2,nw_tos=0,nw_ecn=0,nw_ttl=64,icmp_type=8,icmp_code=0 icmp_csum:b739
+OFPT_FLOW_MOD (xid=0x0): ADD priority=65535,icmp,in_port=1,vlan_tci=0x0000,dl_src=00:00:00:00:00:11,dl_dst=00:00:00:00:00:12,nw_src=10.0.0.1,nw_dst=10.0.0.2,nw_tos=0,icmp_type=8,icmp_code=0 idle:60 buf:0x13b out_port:0 actions=output:2
+OFPT_PACKET_IN (xid=0x0): total_len=98 in_port=2 (via no_match) data_len=98 buffer=0x0000013c
+icmp,vlan_tci=0x0000,dl_src=00:00:00:00:00:12,dl_dst=00:00:00:00:00:11,nw_src=10.0.0.2,nw_dst=10.0.0.1,nw_tos=0,nw_ecn=0,nw_ttl=64,icmp_type=0,icmp_code=0 icmp_csum:bf39
+OFPT_FLOW_MOD (xid=0x0): ADD priority=65535,icmp,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:12,dl_dst=00:00:00:00:00:11,nw_src=10.0.0.2,nw_dst=10.0.0.1,nw_tos=0,icmp_type=0,icmp_code=0 idle:60 buf:0x13c out_port:0 actions=output:1
+
+root@onur-HP-EliteBook-840-G1:/home/onur# ovs-ofctl snoop ap2
+OFPT_ECHO_REQUEST (xid=0x0): 0 bytes of payload
+OFPT_ECHO_REPLY (xid=0x0): 0 bytes of payload
+OFPT_PACKET_IN (xid=0x0): total_len=42 in_port=2 (via no_match) data_len=42 buffer=0x00000146
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:11,dl_dst=ff:ff:ff:ff:ff:ff,arp_spa=10.0.0.1,arp_tpa=10.0.0.2,arp_op=1,arp_sha=00:00:00:00:00:11,arp_tha=00:00:00:00:00:00
+OFPT_PACKET_OUT (xid=0x0): in_port=2 actions=FLOOD buffer=0x00000146
+OFPT_PACKET_IN (xid=0x0): total_len=42 in_port=1 (via no_match) data_len=42 buffer=0x00000147
+arp,vlan_tci=0x0000,dl_src=00:00:00:00:00:12,dl_dst=00:00:00:00:00:11,arp_spa=10.0.0.2,arp_tpa=10.0.0.1,arp_op=2,arp_sha=00:00:00:00:00:12,arp_tha=00:00:00:00:00:11
+2021-03-28T13:48:21Z|00001|ofp_util|INFO|normalization changed ofp_match, details:
+2021-03-28T13:48:21Z|00002|ofp_util|INFO| pre: arp,in_port=1,vlan_tci=0x0000,dl_src=00:00:00:00:00:12,dl_dst=00:00:00:00:00:11,arp_spa=10.0.0.2,arp_tpa=10.0.0.1,arp_op=2,nw_tos=0,tp_src=0,tp_dst=0
+2021-03-28T13:48:21Z|00003|ofp_util|INFO|post: arp,in_port=1,vlan_tci=0x0000,dl_src=00:00:00:00:00:12,dl_dst=00:00:00:00:00:11,arp_spa=10.0.0.2,arp_tpa=10.0.0.1,arp_op=2
+OFPT_FLOW_MOD (xid=0x0): ADD priority=65535,arp,in_port=1,vlan_tci=0x0000,dl_src=00:00:00:00:00:12,dl_dst=00:00:00:00:00:11,arp_spa=10.0.0.2,arp_tpa=10.0.0.1,arp_op=2 idle:60 buf:0x147 out_port:0 actions=output:2
+OFPT_PACKET_IN (xid=0x0): total_len=98 in_port=2 (via no_match) data_len=98 buffer=0x00000148
+icmp,vlan_tci=0x0000,dl_src=00:00:00:00:00:11,dl_dst=00:00:00:00:00:12,nw_src=10.0.0.1,nw_dst=10.0.0.2,nw_tos=0,nw_ecn=0,nw_ttl=64,icmp_type=8,icmp_code=0 icmp_csum:61a3
+OFPT_FLOW_MOD (xid=0x0): ADD priority=65535,icmp,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:11,dl_dst=00:00:00:00:00:12,nw_src=10.0.0.1,nw_dst=10.0.0.2,nw_tos=0,icmp_type=8,icmp_code=0 idle:60 buf:0x148 out_port:0 actions=output:1
+OFPT_PACKET_IN (xid=0x0): total_len=98 in_port=1 (via no_match) data_len=98 buffer=0x00000149
+icmp,vlan_tci=0x0000,dl_src=00:00:00:00:00:12,dl_dst=00:00:00:00:00:11,nw_src=10.0.0.2,nw_dst=10.0.0.1,nw_tos=0,nw_ecn=0,nw_ttl=64,icmp_type=0,icmp_code=0 icmp_csum:69a3
+OFPT_FLOW_MOD (xid=0x0): ADD priority=65535,icmp,in_port=1,vlan_tci=0x0000,dl_src=00:00:00:00:00:12,dl_dst=00:00:00:00:00:11,nw_src=10.0.0.2,nw_dst=10.0.0.1,nw_tos=0,icmp_type=0,icmp_code=0 idle:60 buf:0x149 out_port:0 actions=output:2
