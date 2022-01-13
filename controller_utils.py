@@ -11,6 +11,7 @@ NETWORK_CONFIGURATION_PATH = "/onos/v1/network/configuration"
 DISTANCE_ESTIMATION_PATH = "/onos/v1/paths/{}/{}"
 INTENTS_PATH = "/onos/v1/intents"
 METRICS_PATH = "/onos/cpman/controlmetrics/messages"
+HOSTS_PATH = "/onos/v1/hosts"
 URL_TEMPLATE = "http://{}:8181{}"
 
 LINK_CONFIGURATION_URL = URL_TEMPLATE.format(CONTROLLER_IP, LINK_CONFIGURATION_PATH)
@@ -18,13 +19,15 @@ NETWORK_CONFIGURATION_URL = URL_TEMPLATE.format(CONTROLLER_IP, NETWORK_CONFIGURA
 DISTANCE_ESTIMATION_URL = URL_TEMPLATE.format(CONTROLLER_IP, DISTANCE_ESTIMATION_PATH)
 INTENTS_URL = URL_TEMPLATE.format(CONTROLLER_IP, INTENTS_PATH)
 METRICS_URL = URL_TEMPLATE.format(CONTROLLER_IP, METRICS_PATH)
+HOSTS_URL = URL_TEMPLATE.format(CONTROLLER_IP, HOSTS_PATH)
 
 BASIC_AUTH_HEADERS = {
     'Authorization': "Basic b25vczpyb2Nrcw==",
 }
+s = requests.Session()
+s.auth = ('onos', 'rocks')
 
 logging.basicConfig(level=getattr(logging, LOG_LEVEL), format="%(asctime)s %(levelname)s -> %(message)s")
-logging.getLogger()
 
 
 def escape_path(path):
@@ -44,7 +47,7 @@ def get_distance_and_switches_passed(src, dst):
     dst_mac = host_ip_to_mac(dst)
     dst_id = escape_path(dst_mac) + '%2FNone'
     link = DISTANCE_ESTIMATION_URL.format(src_id, dst_id)
-    response = requests.request("GET", link, headers=BASIC_AUTH_HEADERS)
+    response = s.request("GET", link)
     data = json.loads(response.text)["paths"][0]
     distance = data["cost"]
     for hop in data["links"]:
@@ -57,7 +60,7 @@ def get_distance_and_switches_passed(src, dst):
 def get_distance(src_of_name, dst_of_name):
     try:
         link = DISTANCE_ESTIMATION_URL.format(src_of_name, dst_of_name)
-        response = requests.request("GET", link, headers=BASIC_AUTH_HEADERS)
+        response = s.request("GET", link)
         data = json.loads(response.text)
         if "paths" not in data or len(data["paths"]) == 0:
             return
@@ -71,50 +74,84 @@ def get_distance(src_of_name, dst_of_name):
 
 def delete_link(link):
     url = LINK_CONFIGURATION_URL + escape_path(link)
-    response = requests.request("DELETE", url,
-                                headers=BASIC_AUTH_HEADERS)
-    logging.debug(response.text)
+    response = s.request("DELETE", url)
+    logging.debug("RESPONSE delete_link: %s" % response)
+
+
+def delete_all_links():
+    response = s.request("DELETE", LINK_CONFIGURATION_URL)
+    logging.info("RESPONSE delete_all_links: %s" % response)
 
 
 def post_link(payload):
-    response = requests.request("POST", LINK_CONFIGURATION_URL, data=json.dumps(payload),
-                                headers=BASIC_AUTH_HEADERS)
+    response = s.request("POST", LINK_CONFIGURATION_URL, data=json.dumps(payload))
     logging.debug(response.text)
 
 
 def get_network_configurations():
-    response = requests.request("GET", NETWORK_CONFIGURATION_URL, headers=BASIC_AUTH_HEADERS)
+    response = s.request("GET", NETWORK_CONFIGURATION_URL)
     current_info = json.loads(response.text)
     return current_info
 
 
 def post_network_configurations(payload):
-    response = requests.request("POST", NETWORK_CONFIGURATION_URL, data=json.dumps(payload),
-                                headers=BASIC_AUTH_HEADERS)
+    response = s.request("POST", NETWORK_CONFIGURATION_URL, data=json.dumps(payload))
     logging.debug("RESPONSE post_network_configurations: %s" % response)
 
 
 def get_intents():
-    response = requests.request("GET", INTENTS_URL, headers=BASIC_AUTH_HEADERS)
+    response = s.request("GET", INTENTS_URL)
     current_info = json.loads(response.text)
     return current_info
 
 
 def post_intent(intent):
-    logging.debug(requests.request("POST", INTENTS_URL, data=json.dumps(intent), headers=BASIC_AUTH_HEADERS))
+    logging.debug(s.request("POST", INTENTS_URL, data=json.dumps(intent)))
 
 
 def delete_intent(intent_key):
     url = "{}/org.onosproject.ovsdb/{}".format(INTENTS_URL, intent_key)
-    logging.debug(requests.request("DELETE", url, headers=BASIC_AUTH_HEADERS))
+    logging.debug(s.request("DELETE", url))
 
 
 def get_metrics():
-    response = requests.request("GET", METRICS_URL, headers=BASIC_AUTH_HEADERS)
+    response = s.request("GET", METRICS_URL)
     current_info = json.loads(response.text)
     return current_info
 
 
+def post_host_location(host_ip, host_mac, switch_element_id, vlan="None", port=1, friendly_name=None):
+    payload = {
+        "id": f"{host_mac}/{vlan}",
+        "mac": host_mac,
+        "vlan": vlan,
+        "suspended": False,
+        "ipAddresses": [
+            host_ip
+        ],
+        "locations": [
+            {
+                "elementId": switch_element_id,
+                "port": str(port)
+            }
+        ],
+    }
+    if friendly_name:
+        payload["annotations"] = {"name": friendly_name}
+
+    response = s.request("POST", HOSTS_URL, data=json.dumps(payload))
+    logging.debug("RESPONSE post_host_location: %s" % response)
+
+
+def delete_host_location(host_mac, vlan="None"):
+    host_mac_escaped = escape_path(host_mac)
+    link = f"{HOSTS_URL}/{host_mac_escaped}/{vlan}"
+
+    response = s.request("DELETE", link)
+    logging.debug("RESPONSE delete_host_location: %s" % response)
+
+
 if __name__ == '__main__':
-    logging.info(get_network_configurations())
-    logging.info(get_distance_and_switches_passed("of:1000000000000002", "10.0.0.3"))
+    # logging.info(get_network_configurations())
+    # logging.info(get_distance_and_switches_passed("of:1000000000000002", "10.0.0.3"))
+    delete_all_links()

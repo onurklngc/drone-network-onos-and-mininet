@@ -36,3 +36,12 @@ def server_ip_to_mac(ip):
     host_id = ip.split(".")[-2]
     mac = '00:00:00:00:%s:00' % hex(int(host_id)).split('x')[-1].zfill(2)
     return mac
+
+
+def get_log_server_ip(car_type):
+    threshold = ord(car_type)
+    return int(tmp_host_id)
+
+
+if __name__ == '__main__':
+    get_log_server_ip('T')

@@ -13,12 +13,15 @@ applications_to_activate = [
     "org.onosproject.openflow-base",
     "org.onosproject.hostprovider",
     "org.onosproject.netcfglinksprovider",
-    "org.onosproject.fwd"
+    # "org.onosproject.fwd"
     # "org.onosproject.proxyarp"
 
 ]
 
 configurations = {
+    "org.onosproject.fwd.ReactiveForwarding": {
+        "flowTimeout": "250",
+    },
 }
 
 network_configurations = {
@@ -47,18 +50,18 @@ def activate_applications():
 
 
 def change_onos_configurations():
-    for parameter, payload in configurations.iteritems():
+    for parameter, payload in configurations.items():
         response = requests.request("POST", onos_address + configuration_path + parameter, data=json.dumps(payload),
                                     headers=headers)
-        print("UPLOAD ONOS config %s result: %s" % (parameter, response.status_code))
+        print("UPLOAD config for %s result: %s" % (parameter, response.status_code))
 
 
 def change_app_configurations():
-    for parameter, payload in network_configurations.iteritems():
+    for parameter, payload in network_configurations.items():
         response = requests.request("POST", onos_address + network_configuration_path + parameter,
                                     data=json.dumps(payload),
                                     headers=headers)
-        print("UPLOAD %s config result: %s" % (parameter, response.status_code))
+        print("UPLOAD network config for %s result: %s" % (parameter, response.status_code))
 
 
 if __name__ == '__main__':

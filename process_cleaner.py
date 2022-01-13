@@ -10,6 +10,7 @@ def kill_process(name, ps_parameter, signal_type):
     p = subprocess.Popen(['ps', '-' + ps_parameter], stdout=subprocess.PIPE)
     out, err = p.communicate()
     for line in out.splitlines():
+        line = line.decode()
         if name in line:
             print(line)
             try:
@@ -27,6 +28,7 @@ def stop_children_processes(processes):
         kill_process('main_v2', 'ax', signalType)
         kill_process('sumo-gui', 'ax', signalType)
         kill_process('xterm', 'ax', signalType)
+        kill_process('ITG', 'ax', signalType)
 
 
 if __name__ == '__main__':

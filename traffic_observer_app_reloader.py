@@ -5,7 +5,8 @@ import requests
 # ONOS_ADDRESS = "http://192.168.31.11:30120"
 ONOS_ADDRESS = "http://localhost:8181"
 APPLICATIONS_TO_REFRESH = {
-    "org.boun.trafficobserver": "/home/onur/MS/trafficobserver/app/target/trafficobserver-app-1.0.0-SNAPSHOT.oar"}
+    "org.boun.trafficobserver": "/home/onur/Coding/projects/trafficobserver/app/target/trafficobserver-app-1.0.0-SNAPSHOT.oar",
+    "org.onosproject.fwd": "/home/onur/Coding/projects/onos-app-fwd/app/target/fwd-2.8.0-onur.oar"}
 
 APPLICATION_REST_PATH = "/onos/v1/applications"
 HEADERS_GENERIC = {

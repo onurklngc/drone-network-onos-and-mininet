@@ -1,4 +1,4 @@
-import traceback
+import logging
 
 import controller_utils
 from ap_name_converter import AccessPointNameConverter
@@ -42,16 +42,15 @@ class LinkManager(object):
         return payload
 
     def send_two_way_link_to_controller(self, interface1, interface2):
+        logging.info("Adding two-way link for : %s<>%s", interface1, interface2)
         try:
             payload = self.generate_two_way_link_payload(interface1, interface2)
             debug(payload)
             controller_utils.post_link(payload)
             self.number_of_active_links += 1
         except Exception as e:
-            print(traceback.format_exc())
-            print (e)
-
-        debug("Number of active links: %d" % self.number_of_active_links)
+            logging.exception(e)
+        logging.info("Number of active links: %d", self.number_of_active_links)
 
     def delete_two_way_link_from_controller(self, interface1, interface2):
         try:
@@ -61,8 +60,7 @@ class LinkManager(object):
             self.number_of_active_links -= 1
             self.number_of_deleted_links += 1
         except Exception as e:
-            print(traceback.format_exc())
-            print (e)
+            logging.exception(e)
         debug("Number of deleted links: %d" % self.number_of_deleted_links)
 
 
@@ -72,4 +70,3 @@ if __name__ == '__main__':
     # link_manager.send_two_way_link_to_controller("ap2-mp3", "ap3-mp2")
     # link_manager.send_two_way_link_to_controller("ap2-mp4", "ap4-mp2")
     # link_manager.delete_two_way_link_from_controller("s1-eth2", "s2-eth2")
-

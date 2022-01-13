@@ -59,10 +59,12 @@ def myNetwork():
     ap2.start([c0])
 
     info('*** Post configure nodes\n')
-    ap1.setAntennaGain(100)
-    ap1.setRange(700)
+    sta1.setPosition('111.0,123.0,0')
+    # ap1.setAntennaGain(100)
+    # ap1.setRange(700)
     # ap2.setRange(700)
     # ap1.setPosition('111.0,123.0,0')
+    # sta1.setAssociation(ap1, intf='sta1-wlan0')
     CLI(net)
     net.stop()
 

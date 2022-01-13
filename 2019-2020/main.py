@@ -457,12 +457,12 @@ def start_network():
     # debug("mediaServerIP %s" % mediaServerIP)
     for h in net.hosts:
         h.popen("ping -c 1 10.0.0.1")
-        if re.match(r"h[0-9]+", h.sumo_id):
-            # itg_rec_signal_port = int(h.sumo_id[1:]) + 9000
+        if re.match(r"h[0-9]+", h.name):
+            # itg_rec_signal_port = int(h.name[1:]) + 9000
             # processes.append(h.popen('ITGRecv -Sp %d -a %s' % (itg_rec_signal_port, h.IP())))
             if GENERATE_TRAFFIC:
                 processes.append(h.popen('python streamer_host.py %s %s' % (h.IP(), simulation_id)))
-        elif re.match(r"hs[0-9]+", h.sumo_id):
+        elif re.match(r"hs[0-9]+", h.name):
             if GENERATE_TRAFFIC:
                 processes.append(h.popen('python streamer_host.py %s %s' % (h.IP(), simulation_id)))
     CLI(net)

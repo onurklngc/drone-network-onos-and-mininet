@@ -6,10 +6,10 @@ import time
 class DroneEnergyManager(object):
     battery_levels = []
     depleted_battery_ids = np.array([])
-    number_of_drones = NUM_OF_DRONES
+    number_of_drones = NUMBER_OF_DRONES
     simulation_start_time = 0
 
-    def __init__(self, number_of_drones=NUM_OF_DRONES):
+    def __init__(self, number_of_drones=NUMBER_OF_DRONES):
         self.number_of_drones = number_of_drones
         self.battery_levels = np.full(number_of_drones, INITIAL_DRONE_BATTERY_CAPACITY, dtype=float)
         self.simulation_start_time = str(int(time.time() // 10))
