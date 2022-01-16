@@ -19,8 +19,9 @@ class Status(Enum):
     ASSIGNED_PROCESSOR_LEFT = 8
 
 
-class Task(object):
+class Task:
     no = 0
+    status = None
     start_time = None
     end_time = None
     priority = None
@@ -39,7 +40,7 @@ class Task(object):
     is_assigned_to_cloud = False
     is_waited_in_general_queue = True
     is_waited_in_processor_queue = True
-    tx_process = True
+    tx_process = None
 
     def __init__(self, start_time, owner, size, deadline):
         self.no = Task.no
@@ -100,9 +101,13 @@ class Task(object):
         return self.status in [Status.TX_CLOUD, Status.TX_PROCESSOR]
 
     def start_tx(self, current_time):
+        if current_time == self.start_time:
+            self.is_waited_in_general_queue = False
         self.tx_start_time = current_time
 
     def start_processing(self, current_time, process_duration):
+        if current_time == self.tx_end_time:
+            self.is_waited_in_processor_queue = False
         self.status = Status.PROCESSING
         self.process_start_time = current_time
         self.process_end_time = current_time + process_duration
@@ -138,3 +143,57 @@ class Task(object):
 
     def set_estimated_tx_end_time(self, current_time, estimated_tx_time):
         self.estimated_tx_end_time = current_time + estimated_tx_time
+
+    def get_result(self):
+        return TaskResult(self)
+
+
+class TaskResult:
+    no = 0
+    status = None
+    start_time = None
+    end_time = None
+    priority = None
+    deadline = None
+    delay = None
+    size = None
+    owner = None
+    assigned_processor = None
+    general_queue_arrival_time = None
+    tx_start_time = None
+    tx_end_time = None
+    processor_queue_arrival_time = None
+    process_start_time = None
+    process_end_time = None
+
+    is_assigned_to_cloud = None
+    is_waited_in_general_queue = None
+    is_waited_in_processor_queue = None
+    tx_process = None
+
+    def __init__(self, task):
+        self.no = task.no
+        self.status = task.status
+        self.start_time = task.start_time
+        self.end_time = task.end_time
+        self.priority = task.priority
+        self.deadline = task.deadline
+        self.delay = task.delay
+        self.size = task.size
+        self.owner = task.owner.sumo_id
+        if task.assigned_processor:
+            self.assigned_processor = task.assigned_processor.sumo_id
+        self.general_queue_arrival_time = task.general_queue_arrival_time
+        self.tx_start_time = task.tx_start_time
+        self.tx_end_time = task.tx_end_time
+        self.processor_queue_arrival_time = task.processor_queue_arrival_time
+        self.process_start_time = task.process_start_time
+        self.process_end_time = task.process_end_time
+        self.is_assigned_to_cloud = task.is_assigned_to_cloud
+        self.is_waited_in_general_queue = task.is_waited_in_general_queue
+        self.is_waited_in_processor_queue = task.is_waited_in_processor_queue
+        if task.tx_process and task.tx_process.poll() is not None:
+            self.tx_process = task.tx_process.communicate()
+
+    def __str__(self) -> str:
+        return f"Task #{self.no}({self.start_time}-{self.end_time}), from {self.owner}: {self.status}"

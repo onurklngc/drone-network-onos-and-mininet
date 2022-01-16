@@ -17,6 +17,7 @@ from actors.Simulation import Simulation
 from clean import stop_children_processes
 from drone_movement import DroneMover
 from drone_operator import DroneOperator
+from results import create_simulation_results_data
 from manage_tasks import handle_tasks
 from mn_interface import update_drone_locations_on_mn, update_station_locations_on_mn, vehicle_to_mn_sta, \
     create_topology, \
@@ -24,7 +25,7 @@ from mn_interface import update_drone_locations_on_mn, update_station_locations_
 from sumo_interface import disassociate_sumo_vehicles_leaving_area, \
     associate_sumo_vehicles_with_mn_stations, update_drone_locations_on_sumo, add_aps_as_poi_to_sumo
 from sumo_traci import SumoManager
-from utils import get_wait_time
+from utils import get_wait_time, write_simulation_results, get_settings_to_simulation_object
 
 simulation_id = str(int(time.time() // 10))
 processes = []
@@ -69,6 +70,7 @@ def simulate_sumo(sumo_manager, drone_mover):
         # logging.info("Time it 7")
         step_end_time = time.time()
         wait_time = get_wait_time(step_start_time, step_end_time, s.SIMULATION_STEP_DELAY / 1000.0)
+        write_simulation_results(create_simulation_results_data(), f"results/{Simulation.simulation_id}.pickle")
         time.sleep(wait_time)
 
 
@@ -81,6 +83,10 @@ def start_host_roles(new_net):
 
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, s.LOG_LEVEL), format="%(asctime)s %(levelname)s -> %(message)s")
+
+    Simulation.settings = get_settings_to_simulation_object()
+
+    write_simulation_results(create_simulation_results_data(), f"results/{Simulation.simulation_id}.pickle")
     os.mkdir(f"logs_iperf/{Simulation.simulation_id}")
     controller_utils.delete_all_links()
     setLogLevel(s.MN_WIFI_LOG_LEVEL.lower())
@@ -97,8 +103,8 @@ if __name__ == '__main__':
 
     start_host_roles(net)
     # CLI(net)
-
     simulate_sumo(manager, current_drone_mover)
+    write_simulation_results(create_simulation_results_data(), f"results/{Simulation.simulation_id}.pickle")
     CLI(net)
     del manager
     net.stop()

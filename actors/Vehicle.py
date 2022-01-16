@@ -3,6 +3,7 @@ from enum import Enum
 
 import settings as s
 from actors.EventManager import Event, EventType, EventManager
+from actors.Simulation import Simulation
 from actors.Task import Status
 from actors.constant import Color
 
@@ -121,6 +122,11 @@ class ProcessorVehicle(Vehicle):
     def leave(self, leave_time):
         if self.iperf_server_process:
             self.iperf_server_process.kill()
+            out, err = self.iperf_server_process.communicate()
+            logging.info(f"{self.sumo_id}({self.station.name} iperf server log out: {out}\nerr:{err}")
+            log_file_name = f'logs_iperf/{Simulation.simulation_id}/{self.sumo_id}_{self.station.name}.log'
+            with open(log_file_name, 'wb') as log_file:
+                log_file.write(out)
         super().leave(leave_time)
 
 

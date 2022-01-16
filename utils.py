@@ -1,5 +1,6 @@
 import bisect
 import logging
+import pickle
 import random
 
 import settings as s
@@ -82,3 +83,21 @@ def get_estimated_tx_time_station_to_cloud(given_time, task):
     estimated_tx_time = task.size / min(sta_data_rate, get_cloud_bw())
     logging.info(f"Estimated task #{task.no} tx to cloud time: {estimated_tx_time}")
     return estimated_tx_time
+
+
+def write_simulation_results(results, filename):
+    with open(filename, 'wb') as handle:
+        try:
+            pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        except:
+            pass
+
+def get_settings_to_simulation_object():
+    simulation_settings = {}
+
+    with open('settings.py', 'r') as f:
+        exec(f.read(), simulation_settings)
+    if '__builtins__' in simulation_settings:
+        del simulation_settings['__builtins__']
+
+    return simulation_settings

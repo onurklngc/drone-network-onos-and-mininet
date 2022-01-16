@@ -16,11 +16,7 @@ def add_to_connected_vehicles(vehicle):
     vehicle.connection_status = ConnectionStatus.CONNECTED
     if isinstance(vehicle, ProcessorVehicle):
         Simulation.task_organizer.add_to_available_task_processors(vehicle)
-        outfile = open(f'logs_iperf/{Simulation.simulation_id}/{vehicle.sumo_id}_{vehicle.station.name}.log', 'wb+')
-        outfile.write(b'timestamp,source_address,source_port,destination_address,destination_port,interval,'
-                      b'transferred_bytes,bits_per_second\n')
-        outfile.flush()
-        vehicle.iperf_server_process = vehicle.station.popen(f"iperf -s -y C", stdout=outfile)
+        vehicle.iperf_server_process = vehicle.station.popen(f"iperf -s -y C")
     else:
         Simulation.task_generator.add_to_available_task_generators(vehicle)
 

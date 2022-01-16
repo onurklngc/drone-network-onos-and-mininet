@@ -2,7 +2,6 @@ import logging
 import time
 
 import settings as s
-from actors.Vehicle import ProcessorVehicle, ConnectionStatus
 
 
 class Simulation:
@@ -24,6 +23,7 @@ class Simulation:
     events = {}
     download_data = []
     number_of_reassigned_tasks = 0
+    settings = None
 
     @staticmethod
     def set_task_assigner(host):
@@ -36,4 +36,3 @@ class Simulation:
         Simulation.nat_host_ip = host.intfs[0].ip
         logging.info("NAT host name: %s ,ip: %s" % (host.name, Simulation.nat_host_ip))
         Simulation.nat_host = host
-
