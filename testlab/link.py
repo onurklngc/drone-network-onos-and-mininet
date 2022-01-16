@@ -8,7 +8,7 @@ pL = 0  # Power Loss Coefficient
 nFloors = 0  # Number of floors
 gRandom = 0  # Gaussian random variable
 variance = 2  # variance
-noise_th = -70
+noise_th = -80
 cca_threshold = -90
 ref_d = 1
 a = 12
@@ -60,7 +60,7 @@ def get_log_model_rssi(distance, intf_freq, received_antenna_gain=5, ap_tx_power
     pldb = 10 * exp * math.log10(distance / ref_d)
     rssi = gains - (int(pl) + int(pldb))
 
-    return float(rssi)
+    return int(rssi)
 
 
 def get_los_nlos_mixture_rssi(distance, intf_freq, received_antenna_gain=5, ap_tx_power=14, ap_antenna_gain=5):
@@ -73,7 +73,7 @@ def get_los_nlos_mixture_rssi(distance, intf_freq, received_antenna_gain=5, ap_t
     gains = sum_gains(received_antenna_gain, ap_tx_power, ap_antenna_gain)
     ref_d = 1
 
-    pl = path_loss(intf_freq, ref_d)
+    pl = int(path_loss(intf_freq, ref_d))
     if distance == 0: distance = 0.1
 
     pldb = 10 * exp * math.log10(distance / ref_d)
@@ -83,7 +83,7 @@ def get_los_nlos_mixture_rssi(distance, intf_freq, received_antenna_gain=5, ap_t
     pr_los = 1 / (1 + 12 * math.exp(-b * (elevation_angle - a)))
     pl_avg = pl_los * pr_los + pl_nlos * (1 - pr_los)
     rssi = gains - pl_avg
-    return float(rssi)
+    return int(rssi)
 
 
 def get_log_model_range(intf_freq, received_antenna_gain=5, ap_tx_power=14, ap_antenna_gain=5):
@@ -94,7 +94,7 @@ def get_log_model_range(intf_freq, received_antenna_gain=5, ap_tx_power=14, ap_a
 def get_los_nlos_mixture_model_range(intf_freq, received_antenna_gain=5, ap_tx_power=14, ap_antenna_gain=5):
     for i in range(uav_default_height, 9999):
         rssi = get_los_nlos_mixture_rssi(i, intf_freq, received_antenna_gain, ap_tx_power, ap_antenna_gain)
-        print("RSSI=%.2f for distance %d" % (rssi, i))
+        print("RSSI=%.2f for distance %d" % (rssi-11, i))
         if rssi < noise_th + 0.1:
             return i
     return -1
@@ -111,5 +111,6 @@ if __name__ == '__main__':
     print(calculated_rssi)
     calculated_range = get_log_model_range(2.412, ap_tx_power=14)
     print("log_model_range: %f" % calculated_range)
-    calculated_range = get_los_nlos_mixture_model_range(2.412, ap_tx_power=23)
-    print("los_nlos_mixture_model_range: %f" % calculated_range)
+    calculated_range = get_los_nlos_mixture_model_range(2.412, ap_tx_power=21, ap_antenna_gain=3,
+                                                        received_antenna_gain=3)
+    print("los_nlos_mixture_model_range: %.2f" % calculated_range)

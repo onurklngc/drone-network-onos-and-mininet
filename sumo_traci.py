@@ -7,6 +7,7 @@ import time
 import webcolors
 
 import settings as s
+from actors.SumoVehicle import SumoVehicle
 from drone_movement import DroneMover
 from utils import get_wait_time, pick_coordinate_close_to_given_location
 
@@ -20,40 +21,6 @@ sys.path.append(tools)
 import traci
 
 current_step = 0
-
-
-class SumoVehicle(object):
-    sumo_id = None
-    speed = None
-    position = None
-    angle = None
-    type = None
-    type_abbreviation = None
-    route = None
-    route_length = None
-    current_route_index = 0
-
-    def __init__(self, name, speed=None, location=None, angle=None, vehicle_type=None, type_abbreviation=None,
-                 route_length=None):
-        self.sumo_id = name
-        self.speed = speed
-        self.position = location
-        self.angle = angle
-        self.type = vehicle_type
-        self.type_abbreviation = type_abbreviation
-        if route_length:
-            self.route_length = route_length
-        else:
-            self.route = traci.vehicle.getRoute(name)
-            self.route_length = len(self.route)
-        self.current_route_index = 0
-
-    def __repr__(self):
-        return "{{\"sumo_id\":{}, \"speed\":{}, \"position\":{}," \
-               " \"angle\":{}, \"type\":{}, " \
-               "\"route\":{}/{}}}".format(self.sumo_id, self.speed, self.position,
-                                          self.angle, self.type,
-                                          self.current_route_index, self.route_length)
 
 
 def get_vehicle_data(code):
@@ -129,8 +96,9 @@ class SumoManager(object):
                 continue
             elif vehicle_id in self.vehicles_being_served:
                 vehicle = self.vehicles[vehicle_id]
-                vehicle.position = traci.vehicle.getPosition3D(vehicle_id)
-                vehicle.current_route_index = traci.vehicle.getRouteIndex(vehicle_id)
+                position = traci.vehicle.getPosition3D(vehicle_id)
+                current_route_index = traci.vehicle.getRouteIndex(vehicle_id)
+                vehicle.update_location(position, current_route_index)
                 # vehicle.speed = traci.vehicle.getSpeed(vehicle_id)
                 # vehicle.angle = traci.vehicle.getAngle(vehicle_id)
 

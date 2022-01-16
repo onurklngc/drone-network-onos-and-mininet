@@ -1,7 +1,9 @@
-import queue
+import logging
 from enum import Enum
 
 import settings as s
+from actors.EventManager import Event, EventType, EventManager
+from actors.Task import Status
 
 
 class ConnectionStatus(Enum):
@@ -21,16 +23,19 @@ class Vehicle(object):
     departure_time = None
     task_list = None
     associated_ap = None
+    is_leaving_soon = None
 
     def __init__(self, sumo_vehicle, station, arrival_time):
         self.sumo_id = sumo_vehicle.sumo_id
         self.sumo_vehicle = sumo_vehicle
+        sumo_vehicle.role_object = self
         self.station = station
         self.connection_status = ConnectionStatus.CONNECTING
         self.type_abbreviation = sumo_vehicle.type_abbreviation
         self.properties = s.VEHICLE_TYPE_PROPERTIES[self.type_abbreviation]
         self.arrival_time = arrival_time
         self.task_list = []
+        self.is_leaving_soon = False
 
     def add_task(self, task):
         self.task_list.append(task)
@@ -52,7 +57,10 @@ class ProcessorVehicle(Vehicle):
     queue_size = None
     remaining_queue_size = None
     currently_processed_task = None
+    currently_processed_task_end_time = None
     queue = None
+    being_downloaded_tasks = None
+    estimated_earliest_time_to_process_new_task = None
 
     def __init__(self, sumo_vehicle, station, arrival_time):
         super().__init__(sumo_vehicle, station, arrival_time)
@@ -60,7 +68,52 @@ class ProcessorVehicle(Vehicle):
         self.queue_size = self.properties["queue_size"]
         self.remaining_queue_size = self.queue_size
         self.currently_processed_task = None
-        self.queue = queue.Queue()
+        self.queue = []
+        self.being_downloaded_tasks = []
+        self.estimated_earliest_time_to_process_new_task = arrival_time
+
+    def assign_task(self, current_time, task):
+        logging.info(f"Task #{task.no} is assigned to {self.sumo_id}({self.station.name})")
+        task.start_tx(current_time)
+        self.add_task(task)
+        self.queue.append(task)
+        task.set_processor(self)
+        self.being_downloaded_tasks.append(task)
+        self.remaining_queue_size -= task.size
+        self.estimate_all_tasks_processed_time(current_time)
+
+    def start_task(self, current_time, task):
+        if not self.currently_processed_task:
+            self.currently_processed_task = task
+            self.remaining_queue_size += task.size
+            process_time = task.get_process_time(self.process_speed)
+            task.start_processing(current_time, process_time)
+            self.currently_processed_task_end_time = current_time + process_time
+            new_event = Event(EventType.PROCESS_COMPLETE, task, self.currently_processed_task_end_time)
+            EventManager.add_event(self.currently_processed_task_end_time, new_event)
+
+    def start_to_process_next_task(self, current_time):
+        self.currently_processed_task = None
+        self.estimate_all_tasks_processed_time(current_time)
+        if len(self.queue) > 0:
+            next_task = self.queue.pop(0)
+            self.start_task(current_time, next_task)
+
+    def estimate_all_tasks_processed_time(self, current_time):
+        total_wait_time = 0
+        if self.currently_processed_task:
+            next_task_start_time = self.currently_processed_task.end_time
+        else:
+            next_task_start_time = current_time
+        if self.queue and self.queue[0].status == Status.TX_PROCESSOR:
+            next_task_start_time = max(next_task_start_time, self.queue[0].estimated_tx_end_time)
+        for queue_task in self.queue:
+            total_wait_time += queue_task.get_process_time(self.process_speed)
+        next_task_start_time += total_wait_time
+        self.estimated_earliest_time_to_process_new_task = next_task_start_time
+        logging.info(f"{self.sumo_id}({self.station.name}): the earliest time to process a new task is estimated as "
+                     f"{next_task_start_time}")
+        return next_task_start_time
 
 
 class TaskGeneratorVehicle(Vehicle):

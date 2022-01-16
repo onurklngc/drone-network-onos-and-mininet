@@ -44,7 +44,7 @@ class TaskGenerator(object):
     def select_generator(self):
         idle_generators = []
         for generator in self.available_task_generators.values():
-            if generator.station.wintfs[0].associatedTo:
+            if generator.station.wintfs[0].associatedTo and not generator.is_leaving_soon:
                 idle_generators.append(generator)
         if idle_generators:
             return random.choice(idle_generators)
@@ -72,7 +72,7 @@ class TaskGenerator(object):
                 logging.error("No connected generator vehicle available at time %d", current_time)
                 return new_tasks
             size = random.randint(*s.TASK_SIZE)
-            deadline = random.randint(*s.DEADLINE)
+            deadline = current_time + random.randint(*s.DEADLINE)
             task = Task(start_time, selected_generator, size, deadline)
             selected_generator.add_task(task)
             new_tasks.append(task)

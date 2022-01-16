@@ -18,19 +18,23 @@ def kill_process(name, ps_parameter, signal_type):
                 os.kill(pid, signal_type)
             except Exception as e:
                 print(traceback.format_exc())
-                print (e)
+                print(e)
 
 
 def stop_children_processes(processes):
     for p in processes:
         p.send_signal(SIGINT)
     for signalType in [SIGINT, SIGTERM, 9]:
-        kill_process('main_v2', 'ax', signalType)
+        kill_process('receiver.py', 'ax', signalType)
         kill_process('sumo-gui', 'ax', signalType)
         kill_process('xterm', 'ax', signalType)
-        kill_process('ITG', 'ax', signalType)
+        kill_process('iperf -c', 'ax', signalType)
+        kill_process('iperf -s -y C', 'ax', signalType)
+        # kill_process('ITG', 'ax', signalType)
 
 
 if __name__ == '__main__':
+    subprocess.call(["pkill", "-f", "/usr/bin/python /home/onur/.local/share/JetBrains/Toolbox/apps"
+                                    "/PyCharm-P/ch-0/212.5457.59/plugins/python/helpers/pydev/pydevd.py"])
     stop_children_processes([])
-    p = subprocess.call(['mn', '-c'])
+    subprocess.call(['mn', '-c'])

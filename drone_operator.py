@@ -5,6 +5,7 @@ import settings as s
 from actors.Simulation import Simulation
 from ap_name_converter import AccessPointNameConverter
 from drone_movement import DroneMover
+from manage_vehicle_connections import set_vehicle_as_changing_network, set_vehicle_as_disconnected
 from sumo_traci import convert_geo
 
 
@@ -78,7 +79,7 @@ class DroneOperator(object):
                 continue
             if not connected_ap_interface:
                 logging.error(f"{station.name} is not connected to AP!")
-                Simulation.set_vehicle_as_disconnected(station.sumo_id)
+                set_vehicle_as_disconnected(station.sumo_id)
                 continue
             connected_ap = connected_ap_interface.node
             if station.name in self.associated_ap:
@@ -87,7 +88,7 @@ class DroneOperator(object):
                     continue
                 else:
                     logging.info(f"{station.name} has changed AP, deleting availability.")
-                    Simulation.set_vehicle_as_changing_network(station.sumo_id)
+                    set_vehicle_as_changing_network(station.sumo_id)
                 #     controller_utils.delete_host_location(station_interface.mac)
 
             logging.info(f"{station.name} is getting connected to {connected_ap.name}")

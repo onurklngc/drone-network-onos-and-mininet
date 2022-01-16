@@ -2,7 +2,9 @@ import logging
 
 import settings as s
 from actors.Simulation import Simulation
+from actors.TrafficObserver import TrafficObserver
 from actors.Vehicle import ProcessorVehicle, TaskGeneratorVehicle
+from manage_vehicle_connections import add_to_connecting_vehicles, set_vehicle_as_left
 
 unassociated_mn_stations = []
 
@@ -39,8 +41,9 @@ def disassociate_sumo_vehicles_leaving_area(leaving_vehicle_id_list, vehicle_to_
         sta_to_be_disassociated.sumo_id = None
         sta_to_be_disassociated.setPosition(s.UNASSOCIATED_CAR_LOCATION)
         unassociated_mn_stations.append(sta_to_be_disassociated)
-        logging.info("Disassociating vehicle %s from mn car %s", vehicle_sumo_id, sta_to_be_disassociated.name)
-        Simulation.set_vehicle_as_left(vehicle_sumo_id)
+        set_vehicle_as_left(vehicle_sumo_id)
+        TrafficObserver.reset_traffic_on_sta(sta_to_be_disassociated.name)
+        logging.info("Disassociated vehicle %s from mn car %s", vehicle_sumo_id, sta_to_be_disassociated.name)
 
 
 def add_vehicle(sumo_vehicle, car_to_be_associated, current_time):
@@ -48,7 +51,7 @@ def add_vehicle(sumo_vehicle, car_to_be_associated, current_time):
         vehicle = ProcessorVehicle(sumo_vehicle, car_to_be_associated, current_time)
     else:
         vehicle = TaskGeneratorVehicle(sumo_vehicle, car_to_be_associated, current_time)
-    Simulation.add_to_connecting_vehicles(vehicle)
+    add_to_connecting_vehicles(vehicle)
 
 
 def associate_sumo_vehicles_with_mn_stations(current_time, sumo_manager, vehicle_data_list, vehicle_to_mn_sta):

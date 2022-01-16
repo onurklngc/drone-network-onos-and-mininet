@@ -1,5 +1,3 @@
-import bisect
-import logging
 import math
 import traceback
 from random import randint
@@ -7,24 +5,6 @@ from random import randint
 import numpy as np
 
 import settings as s
-
-
-def rss_to_data_rate(rss):
-    min_sensitivity = [
-        (-82.1, 0),
-        (-82, 6),
-        (-81, 9),
-        (-79, 12),
-        (-77, 18),
-        (-74, 24),
-        (-70, 36),
-        (-66, 48),
-        (-65, 54),
-    ]
-    satisfied_min_value = bisect.bisect_left(min_sensitivity, (rss,))
-    if satisfied_min_value >= len(min_sensitivity):
-        satisfied_min_value = len(min_sensitivity) - 1
-    return min_sensitivity[satisfied_min_value][1]
 
 
 class DroneMover(object):

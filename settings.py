@@ -1,9 +1,10 @@
 # MAIN
+ASSIGNMENT_METHOD = "AGGRESSIVE" # AGGRESSIVE, ADAPTIVE or OPTIMAL
 SIMULATION_DURATION = 450
 TASK_GENERATION_START_TIME = 150
 TASK_GENERATION_END_TIME = 400
-TASK_GENERATION_INTERVAL = 3
-TASK_SIZE = (40, 60)
+TASK_GENERATION_INTERVAL = 5
+TASK_SIZE = (10000, 12000)
 DEADLINE = (50, 120)
 LOG_LEVEL = "INFO"
 # LOG_LEVEL = "DEBUG"
@@ -41,7 +42,7 @@ VEHICLE_PREFIX = "veh"
 START_SIMULATION_DIRECTLY = True
 SUMO_DELAY = 1  # in ms
 SIMULATION_STEP_DELAY = 1000  # in ms
-VEHICLE_CATEGORY_DISTRIBUTION = ['E'] * 5 + ['T'] * 4 + ['A'] * 3 + ['B'] * 1 + ['P'] * 3
+VEHICLE_CATEGORY_DISTRIBUTION = ['E'] * 5 + ['T'] * 4 + ['A'] * 2 + ['B'] * 3 + ['P'] * 3
 DEFAULT_VEHICLE_CLASS = "passenger"
 HIGHLIGHT_CARS = False
 HIGHLIGHT_AP_RANGE = True
@@ -55,35 +56,39 @@ VEHICLE_TYPE_PROPERTIES = {
           "priority": 0.3, "type_abbreviation": "T"},
     # Processors
     "A": {"type": "trailer", "shape": "truck/semitrailer", "color": "purple",
-          "process_speed": 25, "queue_size": 250, "type_abbreviation": "A"},
+          "process_speed": 500, "queue_size": 30000, "type_abbreviation": "A"},
     "B": {"type": "bus", "shape": "bus", "color": "cyan",
-          "process_speed": 15, "queue_size": 150, "type_abbreviation": "B"},
+          "process_speed": 400, "queue_size": 20000, "type_abbreviation": "B"},
     # Other
     "V": {"type": "vip", "shape": "vip", "color": "magenta", "type_abbreviation": "V"},
     "P": {"type": "private", "shape": "passenger/sedan", "color": "pink", "type_abbreviation": "P"},
 }
 # WIFI
-WIFI_NOISE_THRESHOLD = -75
-AP_AP_RANGE = 450
-AP_GROUND_RANGE = 320  # 336 * cos(17.6)
+AP_AP_RSSI = -50
+WIFI_NOISE_THRESHOLD = -80
+REAL_LIFE_RANGE_COEFFICIENT = 0.95
+AP_AP_RANGE = 450 * REAL_LIFE_RANGE_COEFFICIENT
+AP_GROUND_RANGE = 304 * REAL_LIFE_RANGE_COEFFICIENT # 320 * cos(18) = 304
 # POWER
 ANTENNA_GAIN = 3
-DRONE_AP_TX_POWER = 27
+DRONE_AP_TX_POWER = 21
 DRONE_MESH_TX_POWER = 14
 BS_MESH_TX_POWER = 15
-VEHICLE_TX_POWER = 27
+VEHICLE_TX_POWER = 21
 
 # CONTROLLER
 MININET_IP = "127.0.0.1"
 UPDATE_SW_LOCATIONS_ON_ONOS = False
 USE_LAT_LON = False
+CONTROLLER_AP_ID = 4
 
 # TRAFFIC
 GENERATE_TRAFFIC = True
-USE_IPERF = False
+USE_IPERF = True
 DITG_CONTROL_PORTS = []
 
 # CLOUD
+NAT_HOST_ID = 211
 CLOUD_PROCESSOR_SPEED = 250
 CLOUD_PROBABILITY_BY_POOL_SIZE = {
     0: 0,
@@ -93,7 +98,7 @@ CLOUD_PROBABILITY_BY_POOL_SIZE = {
 }
 
 # COMMUNICATION
-TASK_ASSIGNER_SERVER = "NAT"  # BS_HOST, NAT, CONTROLLER_HOST
+TASK_ASSIGNER_SERVER = "CONTROLLER_HOST"  # BS_HOST, NAT, CONTROLLER_HOST
 TASK_REQUEST_LISTEN_PORT = 8701
 
 # OTHER
@@ -103,13 +108,17 @@ CONTROLLER_IP = "127.0.0.1"
 AP_NAME_PREFIX = "ap"
 BS_NAME_PREFIX = "bs"
 BS_ID_OFFSET = 100
-CONTROLLER_HOST_ID = 255
-BS_GROUND_RANGE = 100
+BS_GROUND_RANGE = 18
 BS_GROUND_ANTENNA_GAIN = -5
 BS_GROUND_TX_POWER = 1
 BS_TX_POWER = 1
 ADD_DRONE_MN_HOST = False
 PLOT_MININET_GRAPH = False
+
+# DITG
+ITG_SENDER_LOG_PATH = "ditgSenderLogs"
+ITG_RECEIVER_LOG_PATH = "ditgReceiverLogs"
+ITG_LOG_SERVER_IP = None
 
 # CONFIGS BELOW ARE NOT USED
 # ENERGY

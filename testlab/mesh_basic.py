@@ -10,9 +10,9 @@ from mn_wifi.net import Mininet_wifi
 from mn_wifi.wmediumdConnector import interference
 
 IS_REMOTE_CONTROLLER = True
-AP_TX_POWER = 24
+AP_TX_POWER = 23
 AP_MESH_TX_POWER = 15
-STA_TX_POWER = 24
+STA_TX_POWER = 23
 MESH_CHANNEL = 157
 
 
@@ -25,12 +25,12 @@ def topology():
 
     sta1 = net.addStation('sta1', mac='00:00:00:00:00:11', position='125,1,0')
     sta2 = net.addStation('sta2', mac='00:00:00:00:00:12', position='151,51,0')
-    ap1 = net.addAccessPoint('ap1', wlans=2, ssid='ssid1', position='300,10,0', channel=1, protocols='OpenFlow13')
+    ap1 = net.addAccessPoint('ap1', wlans=2, ssid='ssid1', position='300,10,100', channel=1, protocols='OpenFlow13')
     sta3 = net.addStation('sta3', mac='00:00:00:00:00:13', position='675,11,0')
     sta4 = net.addStation('sta4', mac='00:00:00:00:00:14', position='651,52,0')
-    ap2 = net.addAccessPoint('ap2', wlans=2, ssid='ssid2', position='500,10,0', channel=2, protocols='OpenFlow13')
+    ap2 = net.addAccessPoint('ap2', wlans=2, ssid='ssid2', position='500,10,100', channel=2, protocols='OpenFlow13')
     sta5 = net.addStation('sta5', mac='00:00:00:00:00:15', position='851,52,0')
-    ap3 = net.addAccessPoint('ap3', wlans=2, ssid='ssid3', position='700,10,0', channel=3, protocols='OpenFlow13')
+    ap3 = net.addAccessPoint('ap3', wlans=2, ssid='ssid3', position='700,10,100', channel=3, protocols='OpenFlow13')
     h1 = net.addHost('h%d' % 1, mac='00:00:00:00:00:' + hex(1).split('x')[-1].zfill(2))
     h2 = net.addHost('h%d' % 2, mac='00:00:00:00:00:' + hex(2).split('x')[-1].zfill(2))
     if IS_REMOTE_CONTROLLER:
@@ -42,7 +42,7 @@ def topology():
     else:
         c0 = net.addController(name='c0', port=6654)
     info("*** Configuring Propagation Model\n")
-    net.setPropagationModel(model="losNlosMixture", exp=2)
+    net.setPropagationModel(model="losNlosMixture", exp=2, uav_default_height=100)
 
     info("*** Configuring wifi nodes\n")
     net.configureWifiNodes()

@@ -154,4 +154,5 @@ def delete_host_location(host_mac, vlan="None"):
 if __name__ == '__main__':
     # logging.info(get_network_configurations())
     # logging.info(get_distance_and_switches_passed("of:1000000000000002", "10.0.0.3"))
-    delete_all_links()
+    logging.info(get_distance_and_switches_passed("10.0.0.1", "10.0.0.4"))
+    # delete_all_links()

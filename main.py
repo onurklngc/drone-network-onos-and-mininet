@@ -7,7 +7,10 @@ from mininet.term import makeTerms
 
 import controller_utils
 import settings as s
-from process_cleaner import stop_children_processes
+from TaskGenerator import TaskGenerator
+from TaskOrganizer import TaskOrganizer
+from clean import stop_children_processes
+from manage_tasks import handle_tasks
 
 logging.basicConfig(level=getattr(logging, s.LOG_LEVEL), format="%(asctime)s %(levelname)s -> %(message)s")
 
@@ -19,7 +22,8 @@ from mn_wifi.cli import CLI
 from actors.Simulation import Simulation
 from drone_movement import DroneMover
 from drone_operator import DroneOperator
-from mn_interface import update_drone_locations_on_mn, update_station_locations_on_mn, vehicle_to_mn_sta, create_topology, \
+from mn_interface import update_drone_locations_on_mn, update_station_locations_on_mn, vehicle_to_mn_sta, \
+    create_topology, \
     check_station_connections
 from sumo_interface import disassociate_sumo_vehicles_leaving_area, \
     associate_sumo_vehicles_with_mn_stations, update_drone_locations_on_sumo, add_aps_as_poi_to_sumo
@@ -65,17 +69,27 @@ def simulate_sumo(sumo_manager, drone_mover):
         if s.UPDATE_SW_LOCATIONS_ON_ONOS:
             drone_operator.update_device_coordinates_on_controller(net)
         # logging.info("Time it 6")
-        Simulation.handle_tasks()
+        handle_tasks()
         # logging.info("Time it 7")
         step_end_time = time.time()
         wait_time = get_wait_time(step_start_time, step_end_time, s.SIMULATION_STEP_DELAY / 1000.0)
         time.sleep(wait_time)
 
 
+def start_host_roles(new_net):
+    Simulation.task_assigner_host.popen("python listen_tasks.py")
+    for station in new_net.stations:
+        station.popen("ping %s" % Simulation.task_assigner_host_ip)
+        station.popen("ping %s" % Simulation.nat_host_ip)
+        station.popen('python receiver.py %s %s' % (station.intfs[0].ip, Simulation.simulation_id))
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, s.LOG_LEVEL), format="%(asctime)s %(levelname)s -> %(message)s")
     controller_utils.delete_all_links()
     setLogLevel(s.MN_WIFI_LOG_LEVEL.lower())
+    Simulation.task_organizer = TaskOrganizer()
+    Simulation.task_generator = TaskGenerator()
     current_drone_mover = DroneMover()
     drone_operator = DroneOperator(current_drone_mover)
     net = create_topology(current_drone_mover)
@@ -83,19 +97,12 @@ if __name__ == '__main__':
     add_aps_as_poi_to_sumo(net, manager)
     drone_operator.send_host_coordinates_on_controller(net)
     makeTerms(net.stations, 'station')
+    makeTerms(net.hosts, 'host')
+
+    start_host_roles(net)
     # CLI(net)
 
-    # for h in net.hosts:
-    #     if re.match(r"sta[0-9]+", h.name):
-    #         # itg_rec_signal_port = int(h.name[1:]) + 9000
-    #         # processes.append(h.popen('ITGRecv -Sp %d -a %s' % (itg_rec_signal_port, h.IP())))
-    #         if s.GENERATE_TRAFFIC:
-    #             processes.append(h.popen('python streamer_host.py %s %s' % (h.IP(), simulation_id)))
-
     simulate_sumo(manager, current_drone_mover)
-    # simulate_sumo_thread = threading.Thread(target=simulate_sumo, args=[manager])
-    # simulate_sumo_thread.setDaemon(True)
-    # simulate_sumo_thread.start()
     CLI(net)
     del manager
     net.stop()
