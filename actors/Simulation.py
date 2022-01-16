@@ -22,6 +22,8 @@ class Simulation:
     connecting_vehicles = {}
     tasks = []
     events = {}
+    download_data = []
+    number_of_reassigned_tasks = 0
 
     @staticmethod
     def set_task_assigner(host):

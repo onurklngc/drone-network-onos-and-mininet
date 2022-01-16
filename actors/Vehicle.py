@@ -4,6 +4,7 @@ from enum import Enum
 import settings as s
 from actors.EventManager import Event, EventType, EventManager
 from actors.Task import Status
+from actors.constant import Color
 
 
 class ConnectionStatus(Enum):
@@ -52,7 +53,6 @@ class Vehicle(object):
 
 
 class ProcessorVehicle(Vehicle):
-    processor_type = None
     process_speed = None
     queue_size = None
     remaining_queue_size = None
@@ -61,6 +61,7 @@ class ProcessorVehicle(Vehicle):
     queue = None
     being_downloaded_tasks = None
     estimated_earliest_time_to_process_new_task = None
+    iperf_server_process = None
 
     def __init__(self, sumo_vehicle, station, arrival_time):
         super().__init__(sumo_vehicle, station, arrival_time)
@@ -71,9 +72,9 @@ class ProcessorVehicle(Vehicle):
         self.queue = []
         self.being_downloaded_tasks = []
         self.estimated_earliest_time_to_process_new_task = arrival_time
+        self.iperf_server_process = None
 
     def assign_task(self, current_time, task):
-        logging.info(f"Task #{task.no} is assigned to {self.sumo_id}({self.station.name})")
         task.start_tx(current_time)
         self.add_task(task)
         self.queue.append(task)
@@ -81,9 +82,12 @@ class ProcessorVehicle(Vehicle):
         self.being_downloaded_tasks.append(task)
         self.remaining_queue_size -= task.size
         self.estimate_all_tasks_processed_time(current_time)
+        logging.info(f"{Color.GREEN}Task #{task.no}: {task.owner.station.name}->"
+                     f"{self.station.name}(Remaining:{self.remaining_queue_size}KB){Color.ENDC}")
 
-    def start_task(self, current_time, task):
-        if not self.currently_processed_task:
+    def start_task(self, current_time):
+        if not self.currently_processed_task and self.queue[0].status == Status.WAITING_ON_QUEUE:
+            task = self.queue.pop(0)
             self.currently_processed_task = task
             self.remaining_queue_size += task.size
             process_time = task.get_process_time(self.process_speed)
@@ -96,8 +100,7 @@ class ProcessorVehicle(Vehicle):
         self.currently_processed_task = None
         self.estimate_all_tasks_processed_time(current_time)
         if len(self.queue) > 0:
-            next_task = self.queue.pop(0)
-            self.start_task(current_time, next_task)
+            self.start_task(current_time)
 
     def estimate_all_tasks_processed_time(self, current_time):
         total_wait_time = 0
@@ -115,9 +118,13 @@ class ProcessorVehicle(Vehicle):
                      f"{next_task_start_time}")
         return next_task_start_time
 
+    def leave(self, leave_time):
+        if self.iperf_server_process:
+            self.iperf_server_process.kill()
+        super().leave(leave_time)
+
 
 class TaskGeneratorVehicle(Vehicle):
-    processor_type = None
     priority = None
     is_generating = False
 
@@ -125,6 +132,13 @@ class TaskGeneratorVehicle(Vehicle):
         super().__init__(sumo_vehicle, station, arrival_time)
         self.priority = self.properties["priority"]
         self.is_generating = False
+
+    def get_number_of_pool_and_tx_tasks(self):
+        total = 0
+        for task in self.task_list:
+            if task.status in [Status.TX_CLOUD, Status.TX_PROCESSOR, Status.ON_POOL]:
+                total += 1
+        return total
 
 
 class VehicleMoment:

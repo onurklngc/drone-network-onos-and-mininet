@@ -1,6 +1,7 @@
 import bisect
 import logging
 import random
+import subprocess
 from operator import attrgetter
 
 import settings as s
@@ -74,17 +75,31 @@ class TaskOrganizer:
         for task_no, process in self.download_processes.copy().items():
             state = process.poll()
             if state is not None:
-                logging.info(f"{Color.ORANGE}Task #{task_no} data is transferred{Color.ENDC}")
-                try:
-                    self.download_processes.pop(task_no)
-                except:
-                    pass
                 task = self.active_tasks[task_no]
+                self.download_processes.pop(task_no)
+                if task.status in [Status.TASK_OWNER_LEFT, Status.ASSIGNED_PROCESSOR_LEFT]:
+                    logging.info(f"{Color.ORANGE}Task #{task_no} was {task.status}. Skipping...{Color.ENDC}")
+                    continue
+                destination = "Cloud" if task.is_assigned_to_cloud else task.assigned_processor.station.name
+                logging.info(f"{Color.ORANGE}Task #{task_no} data is transferred: "
+                             f"{task.owner.station.name}->{destination}{Color.ENDC}")
+                out, err = process.communicate()
+                if err:
+                    logging.info(
+                        f"Err for task #{task.no}: {err}")
+                    defaults = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
+                    self.download_processes[task_no] = subprocess.Popen(process.args, **defaults)
+                    continue
+                logging.info(f"Out: {out}")
+                Simulation.download_data.append(out)
                 task.set_tx_complete(current_time)
 
     def get_next_task_pair(self, current_time, processors):
         task_scores = []
         for task in self.pool:
+            if task.owner.station.wintfs[0].associatedTo is None:
+                logging.error(f"Task #{task.no} owner {task.owner.station.name} is disconnected")
+                continue
             best_matching_for_task = None
             for processor in processors:
                 if task.size > processor.remaining_queue_size:
@@ -122,13 +137,14 @@ class TaskOrganizer:
     def add_task(self, current_time, task):
         self.active_tasks[task.no] = task
         pool_size = len(self.pool)
+        logging.info(f"{Color.DARK_WHITE}Current pool size: {pool_size}{Color.ENDC} ")
         threshold_index = bisect.bisect_right(TaskOrganizer.cloud_thresholds, pool_size) - 1
         cloud_probability = s.CLOUD_PROBABILITY_BY_POOL_SIZE[TaskOrganizer.cloud_thresholds[threshold_index]]
         lottery = random.random()
         is_assigned_to_cloud = lottery < cloud_probability
 
         if is_assigned_to_cloud:
-            task.assign_to_cloud(current_time)
+            task.set_assignment_to_cloud(current_time)
             self.assign_to_cloud(current_time, task)
         else:
             self.pool.append(task)
@@ -162,6 +178,23 @@ class TaskOrganizer:
     def remove_from_available_task_processors(self, vehicle_id):
         self.available_task_processors.pop(vehicle_id)
         logging.debug(f"Generator vehicle is removed: {vehicle_id}")
+
+    def handle_vehicle_departure(self, vehicle):
+        for task in vehicle.task_list:
+            is_task_owner = task.owner == vehicle
+            if task.status in [Status.TX_CLOUD, Status.TX_PROCESSOR]:
+                if is_task_owner:
+                    task.status = Status.TASK_OWNER_LEFT
+                    logging.error(
+                        f"{Color.RED}Task #{task.no} owner {vehicle.station.name} is left the area.{Color.ENDC}")
+                    task.tx_process.kill()
+                else:
+                    task.status = Status.ASSIGNED_PROCESSOR_LEFT
+                    logging.error(
+                        f"{Color.RED}Task #{task.no} processor {task.assigned_processor.station.name} is left the area."
+                        f"Reassigning the task.{Color.ENDC}")
+                    Simulation.number_of_reassigned_tasks += 1
+                    self.add_task(Simulation.current_time, task)
 
 
 if __name__ == '__main__':

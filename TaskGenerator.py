@@ -45,7 +45,9 @@ class TaskGenerator(object):
         idle_generators = []
         for generator in self.available_task_generators.values():
             if generator.station.wintfs[0].associatedTo and not generator.is_leaving_soon:
-                idle_generators.append(generator)
+                number_of_active_tasks = generator.get_number_of_pool_and_tx_tasks()
+                for i in range(s.GENERATOR_ACTIVE_TASKS_MAX-number_of_active_tasks):
+                    idle_generators.append(generator)
         if idle_generators:
             return random.choice(idle_generators)
         return None

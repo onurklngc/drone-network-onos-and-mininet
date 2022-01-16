@@ -11,26 +11,32 @@ from mn_wifi.wmediumdConnector import interference
 
 IS_REMOTE_CONTROLLER = True
 AP_TX_POWER = 23
-AP_MESH_TX_POWER = 15
+AP_MESH_TX_POWER = 23
 STA_TX_POWER = 23
-MESH_CHANNEL = 157
+MESH_CHANNEL = 11
+MESH_WIFI_MODE = "g"
+ANTENNA_GAIN = 3
+NOISE_TH = -80
 
 
 def topology():
     "Create a network."
     net = Mininet_wifi(controller=RemoteController if IS_REMOTE_CONTROLLER else Controller,
-                       link=wmediumd, wmediumd_mode=interference, xterms=True, noise_th=-75)
+                       link=wmediumd, wmediumd_mode=interference, xterms=True, noise_th=NOISE_TH)
 
     info("*** Creating nodes\n")
 
-    sta1 = net.addStation('sta1', mac='00:00:00:00:00:11', position='125,1,0')
-    sta2 = net.addStation('sta2', mac='00:00:00:00:00:12', position='151,51,0')
-    ap1 = net.addAccessPoint('ap1', wlans=2, ssid='ssid1', position='300,10,100', channel=1, protocols='OpenFlow13')
-    sta3 = net.addStation('sta3', mac='00:00:00:00:00:13', position='675,11,0')
-    sta4 = net.addStation('sta4', mac='00:00:00:00:00:14', position='651,52,0')
-    ap2 = net.addAccessPoint('ap2', wlans=2, ssid='ssid2', position='500,10,100', channel=2, protocols='OpenFlow13')
-    sta5 = net.addStation('sta5', mac='00:00:00:00:00:15', position='851,52,0')
-    ap3 = net.addAccessPoint('ap3', wlans=2, ssid='ssid3', position='700,10,100', channel=3, protocols='OpenFlow13')
+    sta1 = net.addStation('sta1', mac='00:00:00:00:00:11', antennaGain=ANTENNA_GAIN, position='125,1,0')
+    sta2 = net.addStation('sta2', mac='00:00:00:00:00:12', antennaGain=ANTENNA_GAIN, position='151,51,0')
+    ap1 = net.addAccessPoint('ap1', wlans=2, ssid='ssid1', antennaGain=ANTENNA_GAIN, position='300,10,100', channel=1,
+                             protocols='OpenFlow13')
+    sta3 = net.addStation('sta3', mac='00:00:00:00:00:13', antennaGain=ANTENNA_GAIN, position='475,11,0')
+    sta4 = net.addStation('sta4', mac='00:00:00:00:00:14', antennaGain=ANTENNA_GAIN, position='651,52,0')
+    ap2 = net.addAccessPoint('ap2', wlans=2, ssid='ssid2', antennaGain=ANTENNA_GAIN, position='600,10,100', channel=2,
+                             protocols='OpenFlow13')
+    sta5 = net.addStation('sta5', mac='00:00:00:00:00:15', antennaGain=ANTENNA_GAIN, position='851,52,0')
+    ap3 = net.addAccessPoint('ap3', wlans=2, ssid='ssid3', antennaGain=ANTENNA_GAIN, position='700,10,100', channel=3,
+                             protocols='OpenFlow13')
     h1 = net.addHost('h%d' % 1, mac='00:00:00:00:00:' + hex(1).split('x')[-1].zfill(2))
     h2 = net.addHost('h%d' % 2, mac='00:00:00:00:00:' + hex(2).split('x')[-1].zfill(2))
     if IS_REMOTE_CONTROLLER:
@@ -53,12 +59,12 @@ def topology():
     net.addLink(h1, ap1, bw=100, delay='0ms')
     net.addLink(h2, ap2, bw=100, delay='0ms')
     # net.addLink(ap1, ap2, bw=100, delay='0ms')
-    net.addLink(ap1, intf='ap1-wlan2', cls=mesh, ssid='mesh-ssid', mode="a", channel=MESH_CHANNEL,
-                txpower=AP_MESH_TX_POWER)
-    net.addLink(ap2, intf='ap2-wlan2', cls=mesh, ssid='mesh-ssid', mode="a", channel=MESH_CHANNEL,
-                txpower=AP_MESH_TX_POWER)
-    net.addLink(ap3, intf='ap3-wlan2', cls=mesh, ssid='mesh-ssid', mode="a", channel=MESH_CHANNEL,
-                txpower=AP_MESH_TX_POWER)
+    net.addLink(ap1, intf='ap1-wlan2', cls=mesh, ssid='mesh-ssid', mode=MESH_WIFI_MODE, channel=MESH_CHANNEL,
+                antennaGain=ANTENNA_GAIN, txpower=AP_MESH_TX_POWER)
+    net.addLink(ap2, intf='ap2-wlan2', cls=mesh, ssid='mesh-ssid', mode=MESH_WIFI_MODE, channel=MESH_CHANNEL,
+                antennaGain=ANTENNA_GAIN, txpower=AP_MESH_TX_POWER)
+    net.addLink(ap3, intf='ap3-wlan2', cls=mesh, ssid='mesh-ssid', mode=MESH_WIFI_MODE, channel=MESH_CHANNEL,
+                antennaGain=ANTENNA_GAIN, txpower=AP_MESH_TX_POWER)
 
     info("*** Starting network\n")
     net.plotGraph(max_x=1000, max_y=500, min_x=-70, min_y=-70)

@@ -2,26 +2,22 @@
 
 """UAVs providing network to vehicles."""
 import logging
+import os
+import time
 
+from mininet.log import setLogLevel
 from mininet.term import makeTerms
+from mn_wifi.cli import CLI
 
 import controller_utils
 import settings as s
 from TaskGenerator import TaskGenerator
 from TaskOrganizer import TaskOrganizer
-from clean import stop_children_processes
-from manage_tasks import handle_tasks
-
-logging.basicConfig(level=getattr(logging, s.LOG_LEVEL), format="%(asctime)s %(levelname)s -> %(message)s")
-
-import time
-
-from mininet.log import setLogLevel
-from mn_wifi.cli import CLI
-
 from actors.Simulation import Simulation
+from clean import stop_children_processes
 from drone_movement import DroneMover
 from drone_operator import DroneOperator
+from manage_tasks import handle_tasks
 from mn_interface import update_drone_locations_on_mn, update_station_locations_on_mn, vehicle_to_mn_sta, \
     create_topology, \
     check_station_connections
@@ -81,11 +77,11 @@ def start_host_roles(new_net):
     for station in new_net.stations:
         station.popen("ping %s" % Simulation.task_assigner_host_ip)
         station.popen("ping %s" % Simulation.nat_host_ip)
-        station.popen('python receiver.py %s %s' % (station.intfs[0].ip, Simulation.simulation_id))
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, s.LOG_LEVEL), format="%(asctime)s %(levelname)s -> %(message)s")
+    os.mkdir(f"logs_iperf/{Simulation.simulation_id}")
     controller_utils.delete_all_links()
     setLogLevel(s.MN_WIFI_LOG_LEVEL.lower())
     Simulation.task_organizer = TaskOrganizer()

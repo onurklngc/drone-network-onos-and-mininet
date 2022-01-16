@@ -4,6 +4,7 @@ from enum import Enum
 import settings as s
 from actors.EventManager import EventManager, Event, EventType
 from actors.TrafficObserver import TrafficObserver
+from actors.constant import Color
 
 
 class Status(Enum):
@@ -14,6 +15,8 @@ class Status(Enum):
     WAITING_ON_QUEUE = 4
     PROCESSING = 5
     COMPLETED = 6
+    TASK_OWNER_LEFT = 7
+    ASSIGNED_PROCESSOR_LEFT = 8
 
 
 class Task(object):
@@ -82,7 +85,7 @@ class Task(object):
     def get_task_time(self):
         return self.end_time - self.start_time
 
-    def assign_to_cloud(self, current_time):
+    def set_assignment_to_cloud(self, current_time):
         self.is_assigned_to_cloud = True
         self.status = Status.TX_CLOUD
         self.tx_start_time = current_time
@@ -115,8 +118,10 @@ class Task(object):
     def set_tx_complete(self, current_time):
         self.tx_end_time = current_time
         transfer_time = current_time - self.tx_start_time
-        logging.info(f"Task #{self.no} transfer is completed at {transfer_time:.1f} s, "
-                     f"estimated was at {self.estimated_tx_end_time} s")
+        estimated_tx = self.estimated_tx_end_time - self.tx_start_time
+        logging.info(f"Task #{self.no}'s {self.size}KB data is transfer in "
+                     f"{Color.RED}{transfer_time:.1f}{Color.ENDC} s, "
+                     f"estimated was {Color.GREEN}{estimated_tx}{Color.ENDC} s")
         TrafficObserver.decrement_traffic_on_sta(self.owner.station.name)
         if self.is_assigned_to_cloud:
             self.status = Status.TX_CLOUD
@@ -128,7 +133,7 @@ class Task(object):
             TrafficObserver.decrement_traffic_on_cloud()
         else:
             self.status = Status.WAITING_ON_QUEUE
-            self.assigned_processor.start_task(current_time, self)
+            self.assigned_processor.start_task(current_time)
             TrafficObserver.decrement_traffic_on_sta(self.assigned_processor.station.name)
 
     def set_estimated_tx_end_time(self, current_time, estimated_tx_time):

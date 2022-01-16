@@ -20,7 +20,6 @@ drone_hosts = {}
 vehicle_to_mn_sta = {}
 medium_id = 100
 PERMITTED_5GHZ_CHANNELS = [36, 40, 44, 48, 149, 153, 157]
-next_channel_index = 0
 
 
 def randomly_move_drones(net):
@@ -51,7 +50,7 @@ def update_station_locations_on_mn(vehicle_data_list):
 
 
 def add_ap_ap_links(net, drone_ap_by_id, drone_mover, link_manager):
-    global medium_id, next_channel_index
+    global medium_id
     mesh_links = {}
     drone_mover.select_links()
     neighbors = drone_mover.get_neighbors()
@@ -60,10 +59,10 @@ def add_ap_ap_links(net, drone_ap_by_id, drone_mover, link_manager):
             id_ordering = (neighbor_id + 1, drone_id + 1) if drone_id > neighbor_id else (drone_id + 1, neighbor_id + 1)
             mesh_name = "ap%d-ap%d" % id_ordering
             intf_name = 'ap%d-wlan%d' % (drone_id + 1, neighbor_index + 2)
-            next_channel_index = (drone_id + neighbor_id) % len(PERMITTED_5GHZ_CHANNELS)
+            next_channel = (drone_id + neighbor_id) % 11
             net.addLink(drone_ap_by_id[drone_id], intf=intf_name, cls=mesh,
-                        ssid=mesh_name, mode="ac", channel=PERMITTED_5GHZ_CHANNELS[next_channel_index],
-                        txpower=s.DRONE_AP_TX_POWER)
+                        ssid=mesh_name, mode="ac", channel=next_channel,
+                        txpower=s.DRONE_MESH_TX_POWER)
             logging.info("Adding %s for %s" % (mesh_name, intf_name))
             if id_ordering in mesh_links:
                 mesh_links[id_ordering].append(intf_name.replace("-wlan", "-mp"))
@@ -86,7 +85,7 @@ def configure_tx_powers(new_net, drone_ap_by_id):
 
 def add_bs(net, bs_location, bs_id=s.BS_ID_OFFSET):
     bs = net.addAccessPoint('%s%d' % (s.BS_NAME_PREFIX, bs_id), wlans=2, ssid='ssid-bs',
-                            mode="g", channel=11, protocols='OpenFlow13', antennaGain=s.ANTENNA_GAIN,
+                            mode="g", channel=10, protocols='OpenFlow13', antennaGain=s.ANTENNA_GAIN,
                             position="{},{},{}".format(*bs_location, s.BS_HEIGHT))
     Simulation.bs_host = net.addHost('bs%d' % bs_id, mac='FF:00:00:00:00:00')
     net.bs_map[bs_id] = bs
@@ -96,9 +95,9 @@ def add_bs(net, bs_location, bs_id=s.BS_ID_OFFSET):
 def add_bs_links(net, bs, bs_host, ap, link_manager):
     global medium_id
     net.addLink(bs, intf='%s-wlan2' % bs.name, cls=mesh, ssid='mesh-bs',
-                mode="ac", channel=PERMITTED_5GHZ_CHANNELS[next_channel_index], txpower=s.BS_MESH_TX_POWER)
-    net.addLink(ap, intf='%s-wlan5' % ap.name, cls=mesh, ssid='mesh-bs', mode="ac",
-                channel=PERMITTED_5GHZ_CHANNELS[next_channel_index],
+                mode="ac", channel=11, txpower=s.BS_MESH_TX_POWER)
+    net.addLink(ap, intf='%s-wlan5' % ap.name, cls=mesh, ssid='mesh-bs',
+                channel=11,
                 txpower=s.DRONE_AP_TX_POWER)
     net.addLink(bs_host, bs, bw=100, delay='0ms')
     link_manager.send_two_way_link_to_controller('%s-mp5' % ap.name, '%s-mp2' % bs.name)
@@ -144,7 +143,7 @@ def create_topology(drone_mover):
     for drone_id in range(s.NUMBER_OF_DRONES):
         no_of_wlans = 4 if Simulation.drone_id_close_to_bs != drone_id else 5
         ap = new_net.addAccessPoint('ap%d' % (drone_id + 1), wlans=no_of_wlans, ssid='ssid%d' % (drone_id + 1),
-                                    channel=(drone_id + 1) % 11, ht_cap='HT40+', protocols='OpenFlow13',
+                                    channel=(drone_id + 1) % 11, protocols='OpenFlow13',
                                     antennaGain=s.ANTENNA_GAIN,
                                     position=",".join(str(v) for v in drone_mover.initial_drone_positions[drone_id]))
         drone_aps[drone_id] = ap

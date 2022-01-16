@@ -42,7 +42,6 @@ def disassociate_sumo_vehicles_leaving_area(leaving_vehicle_id_list, vehicle_to_
         sta_to_be_disassociated.setPosition(s.UNASSOCIATED_CAR_LOCATION)
         unassociated_mn_stations.append(sta_to_be_disassociated)
         set_vehicle_as_left(vehicle_sumo_id)
-        TrafficObserver.reset_traffic_on_sta(sta_to_be_disassociated.name)
         logging.info("Disassociated vehicle %s from mn car %s", vehicle_sumo_id, sta_to_be_disassociated.name)
 
 

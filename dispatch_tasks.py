@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 import settings as s
 from actors.Task import Task
 from actors.Vehicle import TaskGeneratorVehicle
+from actors.constant import Color
 from sumo_traci import SumoVehicle
 
 executor = ThreadPoolExecutor(max_workers=5, thread_name_prefix="news_reporter")
@@ -30,6 +31,7 @@ def send_task_request_to_task_assigner(task_assigner_host_ip, task):
 
 
 def send_task_data_to_cloud(cloud_ip, task, log_server_ip):
+    logging.info(f"{Color.BLUE}Task #{task.no}: {task.owner.station.name}->Cloud{Color.ENDC}")
     mn_station = task.owner.station
     # cmd_output = mn_station.cmd("ping -c 1 %s" % cloud_ip)
     # logging.info("Ping result: %s" % cmd_output)
@@ -43,19 +45,15 @@ def send_task_data_to_cloud(cloud_ip, task, log_server_ip):
 
 def send_task_data_to_processor(task, log_server_ip):
     src_station = task.owner.station
-    dst_station_ip = task.assigned_processor.station.wintfs[0].ip
-    # cmd_output = src_station.cmd("ping -c 1 %s" % dst_station_ip)
-    # logging.info("Before D2D, Ping result: %s" % cmd_output)
+    dst_station = task.assigned_processor.station
+    dst_station_ip = dst_station.wintfs[0].ip
+    dst_station.popen("ping -c 1 %s" % src_station.wintfs[0].ip)
     command = get_send_file_command(dst_station_ip, task.size, s.NAT_HOST_ID, log_server_ip)
     logging.info("Command to be called: %s" % command)
     data_send_process = src_station.popen(command)
     task_request_processes[task.no] = data_send_process
     task.tx_process = data_send_process
     return data_send_process
-
-
-def send_task_request_to_task_assigner_async(cloud_ip, task, log_server_ip):
-    executor.submit(send_task_data_to_cloud, cloud_ip, task, log_server_ip)
 
 
 def get_send_file_command(target_ip, data_size, target_id, log_server_ip):

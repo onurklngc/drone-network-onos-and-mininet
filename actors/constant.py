@@ -1,5 +1,3 @@
-
-
 class Color:
     HEADER = '\033[95m'
     BLUE = '\033[34m'
@@ -22,6 +20,4 @@ if __name__ == '__main__':
     print(f"{Color.RED}red%{Color.ENDC}")
     print(f"{Color.ORANGE}orange%{Color.ENDC}")
     print(f"{Color.DARK_WHITE}{Color.STRIKETHROUGH}gray%{Color.ENDC}")
-    print(f"{Color.BLUE}❌<ClubhouseBest>{Color.BOLD}(26.8K){Color.ENDC}")
-    print(f"{Color.CYAN}\u2714<ClubhouseBest>(26.8K){Color.ENDC}")
     print("No color")

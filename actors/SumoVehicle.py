@@ -50,6 +50,6 @@ class SumoVehicle:
         self.position = position
         self.current_route_index = current_route_index
         route_completion_ratio = current_route_index / self.route_length
-        if self.role_object and route_completion_ratio > 0.85 and not self.role_object.is_leaving_soon:
+        if self.role_object and route_completion_ratio > 0.75 and not self.role_object.is_leaving_soon:
             logging.info(f"{self.sumo_id} completed {100 * current_route_index / self.route_length:.0f}% of its route")
             self.role_object.is_leaving_soon = True

@@ -1,17 +1,18 @@
 # MAIN
-ASSIGNMENT_METHOD = "AGGRESSIVE" # AGGRESSIVE, ADAPTIVE or OPTIMAL
-SIMULATION_DURATION = 450
+ASSIGNMENT_METHOD = "AGGRESSIVE"  # AGGRESSIVE, ADAPTIVE or OPTIMAL
+SIMULATION_DURATION = 900
 TASK_GENERATION_START_TIME = 150
-TASK_GENERATION_END_TIME = 400
-TASK_GENERATION_INTERVAL = 5
-TASK_SIZE = (10000, 12000)
+TASK_GENERATION_END_TIME = 750
+TASK_GENERATION_INTERVAL = 10
+TASK_SIZE = (20000, 30000)
 DEADLINE = (50, 120)
 LOG_LEVEL = "INFO"
 # LOG_LEVEL = "DEBUG"
 MN_WIFI_LOG_LEVEL = "INFO"
 NUMBER_OF_DRONES = 9
-NUMBER_OF_STATIONS = 20
+NUMBER_OF_STATIONS = 30
 IS_REMOTE_CONTROLLER = True
+GENERATOR_ACTIVE_TASKS_MAX = 3
 
 # RANDOMNESS CONTROL
 USE_RANDOM_SUMO_SEED = False
@@ -32,8 +33,7 @@ BS_HEIGHT = 10
 HEIGHT_DEVIATION = 3
 
 # SUMO TRACI
-SKIPPED_STEPS = 140
-IS_REAL_TIME = False
+SKIPPED_STEPS = 130
 SUMO_BINARY = "sumo-gui"
 # SUMO_CFG_PATH = "/home/onur/Coding/projects/sdnCaching/configs/besiktas-2-satellite/osm.sumocfg"
 SUMO_CFG_PATH = "/home/onur/Coding/projects/sdnCaching/configs/besiktas-2/osm.sumocfg"
@@ -42,7 +42,7 @@ VEHICLE_PREFIX = "veh"
 START_SIMULATION_DIRECTLY = True
 SUMO_DELAY = 1  # in ms
 SIMULATION_STEP_DELAY = 1000  # in ms
-VEHICLE_CATEGORY_DISTRIBUTION = ['E'] * 5 + ['T'] * 4 + ['A'] * 2 + ['B'] * 3 + ['P'] * 3
+VEHICLE_CATEGORY_DISTRIBUTION = ['E'] * 5 + ['T'] * 4 + ['A'] * 2 + ['B'] * 2 + ['P'] * 3
 DEFAULT_VEHICLE_CLASS = "passenger"
 HIGHLIGHT_CARS = False
 HIGHLIGHT_AP_RANGE = True
@@ -56,9 +56,9 @@ VEHICLE_TYPE_PROPERTIES = {
           "priority": 0.3, "type_abbreviation": "T"},
     # Processors
     "A": {"type": "trailer", "shape": "truck/semitrailer", "color": "purple",
-          "process_speed": 500, "queue_size": 30000, "type_abbreviation": "A"},
+          "process_speed": 2500, "queue_size": 75000, "type_abbreviation": "A"},
     "B": {"type": "bus", "shape": "bus", "color": "cyan",
-          "process_speed": 400, "queue_size": 20000, "type_abbreviation": "B"},
+          "process_speed": 2000, "queue_size": 50000, "type_abbreviation": "B"},
     # Other
     "V": {"type": "vip", "shape": "vip", "color": "magenta", "type_abbreviation": "V"},
     "P": {"type": "private", "shape": "passenger/sedan", "color": "pink", "type_abbreviation": "P"},
@@ -68,12 +68,12 @@ AP_AP_RSSI = -50
 WIFI_NOISE_THRESHOLD = -80
 REAL_LIFE_RANGE_COEFFICIENT = 0.95
 AP_AP_RANGE = 450 * REAL_LIFE_RANGE_COEFFICIENT
-AP_GROUND_RANGE = 304 * REAL_LIFE_RANGE_COEFFICIENT # 320 * cos(18) = 304
+AP_GROUND_RANGE = 304 * REAL_LIFE_RANGE_COEFFICIENT  # 320 * cos(18) = 304
 # POWER
 ANTENNA_GAIN = 3
 DRONE_AP_TX_POWER = 21
-DRONE_MESH_TX_POWER = 14
-BS_MESH_TX_POWER = 15
+DRONE_MESH_TX_POWER = 23
+BS_MESH_TX_POWER = 23
 VEHICLE_TX_POWER = 21
 
 # CONTROLLER
@@ -89,7 +89,7 @@ DITG_CONTROL_PORTS = []
 
 # CLOUD
 NAT_HOST_ID = 211
-CLOUD_PROCESSOR_SPEED = 250
+CLOUD_PROCESSOR_SPEED = 4000
 CLOUD_PROBABILITY_BY_POOL_SIZE = {
     0: 0,
     3: 0.2,
