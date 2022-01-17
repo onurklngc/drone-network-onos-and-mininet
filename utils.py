@@ -5,6 +5,7 @@ import random
 
 import settings as s
 from actors.TrafficObserver import TrafficObserver
+from actors.constant import Color
 
 
 def pick_random_location_for_bs(x_min=s.COORDINATE_LIMIT_X[0], x_max=s.COORDINATE_LIMIT_X[1],
@@ -52,12 +53,13 @@ def get_link_speed_by_rssi(rssi):
     return rss_to_data_transfer_rate_in_kilobyte_per_s(rssi - 91 - s.WIFI_NOISE_THRESHOLD)
 
 
-def get_station_bw(given_time, sta):
+def get_station_bw(given_time, sta, are_sharing_same_interface=0):
     sta_associated_ap_traffic_load = TrafficObserver.get_traffic_on_ap_interface(given_time,
                                                                                  sta.wintfs[0].associatedTo)
     rssi_sta = sta.wintfs[0].rssi
-    sta_data_rate = get_link_speed_by_rssi(rssi_sta) / (sta_associated_ap_traffic_load + 1)
-    logging.info(f"{sta.name} data_rate={sta_data_rate} (AP shared by {sta_associated_ap_traffic_load + 1})")
+    sta_data_rate = get_link_speed_by_rssi(rssi_sta) / (sta_associated_ap_traffic_load + 1 + are_sharing_same_interface)
+    logging.info(f"{sta.name} data_rate={sta_data_rate} (AP shared by {sta_associated_ap_traffic_load + 1}"
+                 f"+{are_sharing_same_interface})")
     return sta_data_rate
 
 
@@ -70,18 +72,21 @@ def get_cloud_bw():
 
 
 def get_estimated_tx_time_between_stations(given_time, sta1, sta2, task):
-    sta1_data_rate = get_station_bw(given_time, sta1)
-    sta2_data_rate = get_station_bw(given_time, sta2)
+    src_ap_interface = sta1.wintfs[0].associatedTo
+    dest_ap_interface = sta2.wintfs[0].associatedTo
+    are_sharing_same_interface = 1 if src_ap_interface == dest_ap_interface else 0
+    sta1_data_rate = get_station_bw(given_time, sta1, are_sharing_same_interface)
+    sta2_data_rate = get_station_bw(given_time, sta2, are_sharing_same_interface)
     estimated_tx_time = task.size / min(sta1_data_rate, sta2_data_rate)
-    logging.info(f"Estimated task #{task.no} tx time: {estimated_tx_time}")
+    logging.info(f"Estimated task #{task.no} tx time: {estimated_tx_time} {sta1.name}->{sta2.name}")
     return estimated_tx_time
 
 
 def get_estimated_tx_time_station_to_cloud(given_time, task):
     sta = task.owner.station
-    sta_data_rate = get_station_bw(given_time, sta)
+    sta_data_rate = get_station_bw(given_time, sta, 0)
     estimated_tx_time = task.size / min(sta_data_rate, get_cloud_bw())
-    logging.info(f"Estimated task #{task.no} tx to cloud time: {estimated_tx_time}")
+    logging.info(f"Estimated task #{task.no} tx time: {estimated_tx_time} {sta.name}->{Color.BLUE}Cloud{Color.ENDC}")
     return estimated_tx_time
 
 
@@ -91,6 +96,7 @@ def write_simulation_results(results, filename):
             pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
         except:
             pass
+
 
 def get_settings_to_simulation_object():
     simulation_settings = {}

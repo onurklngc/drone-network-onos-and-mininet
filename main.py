@@ -44,7 +44,7 @@ def simulate_sumo(sumo_manager, drone_mover):
         current_time += 1
         sumo_manager.wait_simulation_step()
         Simulation.current_time = current_time
-        logging.debug("Current step: %s", Simulation.current_time)
+        logging.info("Current step: %s", Simulation.current_time)
         drone_mover.move_drones_for_one_time_interval(Simulation.current_time)
         # logging.info("Time it")
         update_drone_locations_on_mn(drone_mover)
@@ -78,17 +78,17 @@ def start_host_roles(new_net):
     Simulation.task_assigner_host.popen("python listen_tasks.py")
     for station in new_net.stations:
         station.popen("ping %s" % Simulation.task_assigner_host_ip)
-        station.popen("ping %s" % Simulation.nat_host_ip)
-    if s.CLOUD_SERVER == "BS_HOST":
-        Simulation.cloud_iperf_process = Simulation.cloud_server.popen("iperf -s -y C")
+        station.popen("ping %s" % Simulation.cloud_server_ip)
+    # if s.CLOUD_SERVER == "BS_HOST":
+    #     Simulation.cloud_iperf_process = Simulation.cloud_server.popen("iperf -s -y C")
 
 
 def stop_servers():
     if Simulation.cloud_iperf_process:
-        Simulation.cloud_iperf_process.kill()
+        Simulation.cloud_iperf_process.wait()
         out, err = Simulation.cloud_iperf_process.communicate()
         logging.info(f"Cloud iperf server log out: {out}\nerr:{err}")
-        log_file_name = f'logs_iperf/{Simulation.real_life_start_time}/cloud_server.log'
+        log_file_name = f'logs_iperf/{Simulation.real_life_start_time}_cloud_server.log'
         with open(log_file_name, 'wb') as log_file:
             log_file.write(out)
 
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     start_host_roles(net)
     # CLI(net)
     simulate_sumo(manager, current_drone_mover)
-    stop_servers()
+    # stop_servers()
     write_simulation_results(create_simulation_results_data(), Simulation.results_file_name)
     CLI(net)
     del manager

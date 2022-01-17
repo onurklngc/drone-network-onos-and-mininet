@@ -33,6 +33,7 @@ class Task:
     general_queue_arrival_time = None
     tx_start_time = None
     tx_end_time = None
+    estimated_tx_end_time = None
     processor_queue_arrival_time = None
     process_start_time = None
     process_end_time = None
@@ -41,6 +42,7 @@ class Task:
     is_waited_in_general_queue = True
     is_waited_in_processor_queue = True
     tx_process = None
+    server_process = None
 
     def __init__(self, start_time, owner, size, deadline):
         self.no = Task.no
@@ -54,6 +56,7 @@ class Task:
         self.deadline = deadline
         self.estimated_tx_end_time = None
         self.tx_process = None
+        self.server_process = None
 
     def __str__(self) -> str:
         return f"Task #{self.no} from {self.owner.station.name}: {self.status.name}\t" \
@@ -160,6 +163,7 @@ class TaskResult:
     general_queue_arrival_time = None
     tx_start_time = None
     tx_end_time = None
+    estimated_tx_end_time = None
     processor_queue_arrival_time = None
     process_start_time = None
     process_end_time = None
@@ -187,6 +191,7 @@ class TaskResult:
         self.processor_queue_arrival_time = task.processor_queue_arrival_time
         self.process_start_time = task.process_start_time
         self.process_end_time = task.process_end_time
+        self.estimated_tx_end_time = task.estimated_tx_end_time
         self.is_assigned_to_cloud = task.is_assigned_to_cloud
         self.is_waited_in_general_queue = task.is_waited_in_general_queue
         self.is_waited_in_processor_queue = task.is_waited_in_processor_queue
@@ -195,18 +200,29 @@ class TaskResult:
 
     def get_timeline(self):
         timeline = f"Start:{self.start_time} -> "
-        if not self.is_assigned_to_cloud:
+        if not self.is_assigned_to_cloud and {self.tx_start_time}:
             timeline += f"Pool_leave:{self.tx_start_time} -> "
-        timeline += f"Tx_end:{self.tx_end_time} -> "
+        if self.status in [Status.TX_CLOUD, Status.TX_PROCESSOR]:
+            return f"{timeline} Estimated tx: {self.estimated_tx_end_time:.0f}"
+        elif not self.tx_end_time:
+            return timeline
+        if self.estimated_tx_end_time:
+            estimated_tx_end_time = f"({self.estimated_tx_end_time:.0f})"
+            if self.estimated_tx_end_time < self.tx_end_time:
+                estimated_tx_end_time = f"{Color.RED}{estimated_tx_end_time}{Color.ENDC}"
+        else:
+            estimated_tx_end_time = ""
+        timeline += f"Tx_end:{self.tx_end_time:.0f}{estimated_tx_end_time} -> "
         if not self.is_assigned_to_cloud:
             timeline += f"Queue_leave:{self.process_start_time} -> "
-        timeline += f"End:{self.end_time}"
+        end_time = f"End:{self.end_time:.0f}" if self.end_time else ""
+        timeline += end_time
         return timeline
 
     def __str__(self) -> str:
         processor = f"{Color.BLUE}cloud{Color.ENDC}" if self.is_assigned_to_cloud else self.assigned_processor
 
-        if self.status == Status.COMPLETED:
+        if self.status in [Status.COMPLETED, Status.PROCESSING]:
             delay = f"Delay:{self.delay:.1f} Prioritized delay: {self.priority * self.delay:.1f}"
         else:
             delay = ""

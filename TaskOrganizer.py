@@ -61,7 +61,6 @@ class TaskOrganizer:
                 event.task.status = Status.COMPLETED
                 if event.task.is_assigned_to_cloud:
                     logging.info(f"Task #{event.task.no} process on cloud is complete.")
-                    TrafficObserver.decrement_traffic_on_sta(event.task.owner.station.name)
                 else:
                     processor = event.task.assigned_processor
                     logging.info(f"Task #{event.task.no} process on processor {processor.sumo_id} is complete.")
@@ -88,14 +87,16 @@ class TaskOrganizer:
                     logging.info(
                         f"Err for task #{task.no}: {err}")
                     if task.is_assigned_to_cloud:
-                        Simulation.nat_host.popen("ping -c 3 %s" % task.owner.station.wintfs[0].ip)
+                        Simulation.cloud_server.popen("ping -c 3 %s" % task.owner.station.wintfs[0].ip)
                     else:
                         task.assigned_processor.station.popen("ping -c 3 %s" % task.owner.station.wintfs[0].ip)
                     defaults = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
                     self.download_processes[task_no] = subprocess.Popen(process.args, **defaults)
                     continue
                 logging.info(f"Out: {out}")
-                Simulation.download_data.append(out)
+                Simulation.upload_reports.append(out)
+                task.server_process.kill()
+                task.server_process.wait()
                 task.set_tx_complete(current_time)
 
     def get_next_task_pair(self, current_time, processors):
@@ -130,6 +131,27 @@ class TaskOrganizer:
             self.assign_task_to_processor(current_time, new_matching)
             return self.aggressive_assignment(current_time, processors)
 
+    def adaptive_assignment(self, current_time, processors):
+        processors_with_no_active_download_operation = []
+        for processor in processors:
+            has_download_job = False
+            for task in processor.queue:
+                if task.status == Status.TX_PROCESSOR:
+                    has_download_job = True
+                    break
+            if not has_download_job:
+                processors_with_no_active_download_operation.append(processor)
+        new_matching = self.get_next_task_pair(current_time, processors_with_no_active_download_operation)
+        while new_matching:
+            processors_with_no_active_download_operation.remove(new_matching.processor)
+            self.assign_task_to_processor(current_time, new_matching)
+            new_matching = self.get_next_task_pair(current_time, processors_with_no_active_download_operation)
+
+        new_matching = self.get_next_task_pair(current_time, processors)
+        if new_matching:
+            self.assign_task_to_processor(current_time, new_matching)
+            return self.aggressive_assignment(current_time, processors)
+
     def handle_tasks(self, current_time):
         self.check_events(current_time)
         self.check_download_processes(current_time)
@@ -137,6 +159,8 @@ class TaskOrganizer:
                                        self.available_task_processors.values() if not processor.is_leaving_soon]
         if s.ASSIGNMENT_METHOD == "AGGRESSIVE":
             self.aggressive_assignment(current_time, processors_not_leaving_soon)
+        elif s.ASSIGNMENT_METHOD == "ADAPTIVE":
+            self.adaptive_assignment(current_time, processors_not_leaving_soon)
 
     def add_task(self, current_time, task):
         self.active_tasks[task.no] = task
@@ -170,33 +194,35 @@ class TaskOrganizer:
     def assign_to_cloud(self, current_time, new_task):
         estimated_tx_time = get_estimated_tx_time_station_to_cloud(current_time, new_task)
         new_task.set_estimated_tx_end_time(current_time, estimated_tx_time)
-        download_process = send_task_data_to_cloud(Simulation.nat_host_ip, new_task, Simulation.nat_host_ip)
+        download_process = send_task_data_to_cloud(Simulation.cloud_server, Simulation.cloud_server_ip, new_task,
+                                                   Simulation.nat_host_ip)
         self.download_processes[new_task.no] = download_process
         TrafficObserver.increment_traffic_on_sta(new_task.owner.station.name)
         TrafficObserver.increment_traffic_on_cloud()
 
     def add_to_available_task_processors(self, vehicle):
         self.available_task_processors[vehicle.sumo_id] = vehicle
-        logging.debug(f"New generator vehicle is added: {vehicle.sumo_id}")
+        logging.debug(f"New processor vehicle is added: {vehicle.sumo_id}")
 
     def remove_from_available_task_processors(self, vehicle_id):
-        self.available_task_processors.pop(vehicle_id)
-        logging.debug(f"Generator vehicle is removed: {vehicle_id}")
+        if vehicle_id in self.available_task_processors:
+            self.available_task_processors.pop(vehicle_id)
+            logging.debug(f"Processor vehicle is removed: {vehicle_id}")
+        else:
+            logging.info(f"Processor vehicle is already removed: {vehicle_id}")
 
     def handle_vehicle_departure(self, vehicle):
         is_processor = isinstance(vehicle, ProcessorVehicle)
-        if is_processor and vehicle.iperf_server_process:
-            vehicle.iperf_server_process.kill()
-            out, err = vehicle.iperf_server_process.communicate()
-            logging.info(f"{vehicle.sumo_id}({vehicle.station.name}) iperf server log out: {out}\nerr:{err}")
-            log_file_name = f'logs_iperf/{Simulation.real_life_start_time}/{vehicle.sumo_id}_{vehicle.station.name}.log'
-            with open(log_file_name, 'wb') as log_file:
-                log_file.write(out)
+        if is_processor and vehicle.iperf_server_processes:
+            for iperf_server_process in vehicle.iperf_server_processes:
+                iperf_server_process.kill()
+                iperf_server_process.wait()
         for task in vehicle.task_list:
-            if task.status not in [Status.TX_CLOUD, Status.TX_PROCESSOR, Status.ON_POOL]:
-                continue
             if task in self.pool:
                 self.pool.remove(task)
+                continue
+            if task.status not in [Status.TX_CLOUD, Status.TX_PROCESSOR]:
+                continue
             if is_processor:
                 task.status = Status.PROCESSOR_LEFT
                 logging.error(
@@ -204,12 +230,22 @@ class TaskOrganizer:
                     f"Reassigning the task.{Color.ENDC}")
                 Simulation.number_of_reassigned_tasks += 1
                 self.add_task(Simulation.current_time, task)
+                task.assigned_processor.drop_task(Simulation.current_time, task)
+                TrafficObserver.decrement_traffic_on_sta(task.owner.station.name)
             else:
                 task.status = Status.OWNER_LEFT
                 logging.error(
                     f"{Color.RED}Task #{task.no} owner {vehicle.station.name} is left the area.{Color.ENDC}")
+                if task.is_assigned_to_cloud:
+                    TrafficObserver.decrement_traffic_on_cloud()
+                else:
+                    task.assigned_processor.drop_task(Simulation.current_time, task)
+                    TrafficObserver.decrement_traffic_on_sta(task.assigned_processor.station.name)
             if task.tx_process:
                 task.tx_process.kill()
+                task.tx_process.wait()
+                task.server_process.kill()
+                task.server_process.wait()
             if task.no in self.download_processes:
                 self.download_processes.pop(task.no)
 

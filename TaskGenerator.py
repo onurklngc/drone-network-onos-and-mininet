@@ -30,8 +30,11 @@ class TaskGenerator(object):
         logging.debug(f"New generator vehicle is added: {vehicle.sumo_id}")
 
     def remove_task_generator(self, vehicle_id):
-        self.available_task_generators.pop(vehicle_id)
-        logging.debug(f"Generator vehicle is removed: {vehicle_id}")
+        if vehicle_id in self.available_task_generators:
+            self.available_task_generators.pop(vehicle_id)
+            logging.debug(f"Generator vehicle is removed: {vehicle_id}")
+        else:
+            logging.info(f"Generator vehicle is already removed: {vehicle_id}")
 
     def generate_task_timeline(self):
         t = s.TASK_GENERATION_START_TIME

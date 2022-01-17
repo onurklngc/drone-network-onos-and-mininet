@@ -3,6 +3,7 @@ import random
 from concurrent.futures import ThreadPoolExecutor
 
 import settings as s
+from actors.Simulation import Simulation
 from actors.Task import Task
 from actors.Vehicle import TaskGeneratorVehicle
 from actors.constant import Color
@@ -30,12 +31,19 @@ def send_task_request_to_task_assigner(task_assigner_host_ip, task):
     task_request_processes[task.no] = task_request_process
 
 
-def send_task_data_to_cloud(cloud_ip, task, log_server_ip):
+def send_task_data_to_cloud(cloud_server, cloud_ip, task, log_server_ip):
     logging.info(f"{Color.BLUE}Task #{task.no}: {task.owner.station.name}->Cloud{Color.ENDC}")
     mn_station = task.owner.station
     # cmd_output = mn_station.cmd("ping -c 1 %s" % cloud_ip)
     # logging.info("Ping result: %s" % cmd_output)
-    command = get_send_file_command(cloud_ip, task.size, s.NAT_HOST_ID, log_server_ip)
+    iperf_port = task.no + s.IPERF_PORT_RANGE_START
+
+    server_command = get_serve_file_command(iperf_port)
+    server_process = cloud_server.popen(server_command)
+    task.server_process = server_process
+
+    task_identifier = f"{task.no},{task.owner.sumo_id},{mn_station.name},cloud,{cloud_server.name}"
+    command = get_send_file_command(cloud_ip, iperf_port, task.size, task_identifier, s.NAT_HOST_ID, log_server_ip)
     logging.info("Command to be called: %s" % command)
     data_send_process = mn_station.popen(command)
     cloud_processes[task.no] = data_send_process
@@ -47,8 +55,17 @@ def send_task_data_to_processor(task, log_server_ip):
     src_station = task.owner.station
     dst_station = task.assigned_processor.station
     dst_station_ip = dst_station.wintfs[0].ip
-    dst_station.popen("ping -c 1 %s" % src_station.wintfs[0].ip)
-    command = get_send_file_command(dst_station_ip, task.size, s.NAT_HOST_ID, log_server_ip)
+    iperf_port = task.no + s.IPERF_PORT_RANGE_START
+
+    server_command = get_serve_file_command(iperf_port)
+    server_process = dst_station.popen(server_command)
+    task.server_process = server_process
+
+    dst_station.popen("ping -c 5 %s" % src_station.wintfs[0].ip)
+
+    task_identifier = f"{task.no},{task.owner.sumo_id},{src_station.name},{dst_station.sumo_id},{dst_station.name}"
+    command = get_send_file_command(dst_station_ip, iperf_port, task.size, task_identifier, s.NAT_HOST_ID,
+                                    log_server_ip)
     logging.info("Command to be called: %s" % command)
     data_send_process = src_station.popen(command)
     task_request_processes[task.no] = data_send_process
@@ -56,9 +73,10 @@ def send_task_data_to_processor(task, log_server_ip):
     return data_send_process
 
 
-def get_send_file_command(target_ip, data_size, target_id, log_server_ip):
+def get_send_file_command(target_ip, target_port, data_size, task_data, target_id, log_server_ip):
     if s.USE_IPERF:
-        command = "iperf -c {0} -n {1}KB -f KB -y C".format(target_ip, data_size)
+        command = "iperf3 -c {0} -p {1} -n {2}KB -f K -Z --extra-data {3}".format(target_ip, target_port, data_size,
+                                                                                  task_data)
     else:
         command = "ITGSend -a {0} -T TCP -C 100000 -c 1408 -k {1} -L {2} TCP -l {3}/{4}.log " \
                   "-Sdp {5} -rp {7} -j 1 -poll" \
@@ -66,6 +84,12 @@ def get_send_file_command(target_ip, data_size, target_id, log_server_ip):
                     s.ITG_SENDER_LOG_PATH, target_id, target_id + 9000, target_id + 9200, target_id + 9400
                     )
     return command
+
+
+def get_serve_file_command(receiving_port):
+    log_file_name = f'logs_iperf/{Simulation.real_life_start_time}_server.log'
+    if s.USE_IPERF:
+        return "iperf3 -s -p {0} -J -f K --logfile {1}".format(receiving_port, log_file_name)
 
 
 def send_task_request_to_task_assigner_async(task_assigner_host_ip, task):

@@ -28,8 +28,7 @@ def stop_children_processes(processes):
         kill_process('receiver.py', 'ax', signalType)
         kill_process('sumo-gui', 'ax', signalType)
         kill_process('xterm', 'ax', signalType)
-        kill_process('iperf -c', 'ax', signalType)
-        kill_process('iperf -s -y C', 'ax', signalType)
+        kill_process('iperf', 'ax', signalType)
         # kill_process('ITG', 'ax', signalType)
 
 
