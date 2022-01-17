@@ -48,6 +48,7 @@ def disassociate_sumo_vehicles_leaving_area(leaving_vehicle_id_list, vehicle_to_
 def add_vehicle(sumo_vehicle, car_to_be_associated, current_time):
     if sumo_vehicle.type_abbreviation in s.PROCESSOR_VEHICLE_TYPES:
         vehicle = ProcessorVehicle(sumo_vehicle, car_to_be_associated, current_time)
+        vehicle.iperf_server_process = vehicle.station.popen("iperf -s -y C")
     else:
         vehicle = TaskGeneratorVehicle(sumo_vehicle, car_to_be_associated, current_time)
     add_to_connecting_vehicles(vehicle)

@@ -17,11 +17,11 @@ from actors.Simulation import Simulation
 from clean import stop_children_processes
 from drone_movement import DroneMover
 from drone_operator import DroneOperator
-from results import create_simulation_results_data
 from manage_tasks import handle_tasks
 from mn_interface import update_drone_locations_on_mn, update_station_locations_on_mn, vehicle_to_mn_sta, \
     create_topology, \
     check_station_connections
+from results import create_simulation_results_data
 from sumo_interface import disassociate_sumo_vehicles_leaving_area, \
     associate_sumo_vehicles_with_mn_stations, update_drone_locations_on_sumo, add_aps_as_poi_to_sumo
 from sumo_traci import SumoManager
@@ -70,7 +70,7 @@ def simulate_sumo(sumo_manager, drone_mover):
         # logging.info("Time it 7")
         step_end_time = time.time()
         wait_time = get_wait_time(step_start_time, step_end_time, s.SIMULATION_STEP_DELAY / 1000.0)
-        write_simulation_results(create_simulation_results_data(), f"results/{Simulation.simulation_id}.pickle")
+        write_simulation_results(create_simulation_results_data(), Simulation.results_file_name)
         time.sleep(wait_time)
 
 
@@ -79,15 +79,24 @@ def start_host_roles(new_net):
     for station in new_net.stations:
         station.popen("ping %s" % Simulation.task_assigner_host_ip)
         station.popen("ping %s" % Simulation.nat_host_ip)
+    if s.CLOUD_SERVER == "BS_HOST":
+        Simulation.cloud_iperf_process = Simulation.cloud_server.popen("iperf -s -y C")
+
+
+def stop_servers():
+    if Simulation.cloud_iperf_process:
+        Simulation.cloud_iperf_process.kill()
+        out, err = Simulation.cloud_iperf_process.communicate()
+        logging.info(f"Cloud iperf server log out: {out}\nerr:{err}")
+        log_file_name = f'logs_iperf/{Simulation.real_life_start_time}/cloud_server.log'
+        with open(log_file_name, 'wb') as log_file:
+            log_file.write(out)
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, s.LOG_LEVEL), format="%(asctime)s %(levelname)s -> %(message)s")
-
     Simulation.settings = get_settings_to_simulation_object()
-
-    write_simulation_results(create_simulation_results_data(), f"results/{Simulation.simulation_id}.pickle")
-    os.mkdir(f"logs_iperf/{Simulation.simulation_id}")
+    os.mkdir(f"logs_iperf/{Simulation.real_life_start_time}")
     controller_utils.delete_all_links()
     setLogLevel(s.MN_WIFI_LOG_LEVEL.lower())
     Simulation.task_organizer = TaskOrganizer()
@@ -104,7 +113,8 @@ if __name__ == '__main__':
     start_host_roles(net)
     # CLI(net)
     simulate_sumo(manager, current_drone_mover)
-    write_simulation_results(create_simulation_results_data(), f"results/{Simulation.simulation_id}.pickle")
+    stop_servers()
+    write_simulation_results(create_simulation_results_data(), Simulation.results_file_name)
     CLI(net)
     del manager
     net.stop()

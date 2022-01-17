@@ -15,8 +15,8 @@ class Status(Enum):
     WAITING_ON_QUEUE = 4
     PROCESSING = 5
     COMPLETED = 6
-    TASK_OWNER_LEFT = 7
-    ASSIGNED_PROCESSOR_LEFT = 8
+    OWNER_LEFT = 7
+    PROCESSOR_LEFT = 8
 
 
 class Task:
@@ -113,6 +113,8 @@ class Task:
         self.process_end_time = current_time + process_duration
         self.end_time = self.process_end_time
         self.calculate_delay()
+        new_event = Event(EventType.PROCESS_COMPLETE, self, self.end_time)
+        EventManager.add_event(self.end_time, new_event)
 
     def get_process_time(self, processor_speed):
         return self.size / processor_speed
@@ -129,12 +131,8 @@ class Task:
                      f"estimated was {Color.GREEN}{estimated_tx}{Color.ENDC} s")
         TrafficObserver.decrement_traffic_on_sta(self.owner.station.name)
         if self.is_assigned_to_cloud:
-            self.status = Status.TX_CLOUD
-            self.process_start_time = current_time
             process_duration = self.get_process_time(s.CLOUD_PROCESSOR_SPEED)
-            self.end_time = current_time + process_duration
-            new_event = Event(EventType.PROCESS_COMPLETE, self, self.end_time)
-            EventManager.add_event(current_time, new_event)
+            self.start_processing(current_time, process_duration)
             TrafficObserver.decrement_traffic_on_cloud()
         else:
             self.status = Status.WAITING_ON_QUEUE
@@ -180,9 +178,9 @@ class TaskResult:
         self.deadline = task.deadline
         self.delay = task.delay
         self.size = task.size
-        self.owner = task.owner.sumo_id
+        self.owner = f"{task.owner.sumo_id}({task.owner.station.name})"
         if task.assigned_processor:
-            self.assigned_processor = task.assigned_processor.sumo_id
+            self.assigned_processor = f"{task.assigned_processor.sumo_id}({task.assigned_processor.station.name})"
         self.general_queue_arrival_time = task.general_queue_arrival_time
         self.tx_start_time = task.tx_start_time
         self.tx_end_time = task.tx_end_time
@@ -195,5 +193,29 @@ class TaskResult:
         if task.tx_process and task.tx_process.poll() is not None:
             self.tx_process = task.tx_process.communicate()
 
+    def get_timeline(self):
+        timeline = f"Start:{self.start_time} -> "
+        if not self.is_assigned_to_cloud:
+            timeline += f"Pool_leave:{self.tx_start_time} -> "
+        timeline += f"Tx_end:{self.tx_end_time} -> "
+        if not self.is_assigned_to_cloud:
+            timeline += f"Queue_leave:{self.process_start_time} -> "
+        timeline += f"End:{self.end_time}"
+        return timeline
+
     def __str__(self) -> str:
-        return f"Task #{self.no}({self.start_time}-{self.end_time}), from {self.owner}: {self.status}"
+        processor = f"{Color.BLUE}cloud{Color.ENDC}" if self.is_assigned_to_cloud else self.assigned_processor
+
+        if self.status == Status.COMPLETED:
+            delay = f"Delay:{self.delay:.1f} Prioritized delay: {self.priority * self.delay:.1f}"
+        else:
+            delay = ""
+
+        status = self.status.name
+        if self.status == Status.COMPLETED:
+            status = f"{Color.GREEN}{status}{Color.ENDC}"
+        elif self.status in [Status.OWNER_LEFT, Status.PROCESSOR_LEFT]:
+            status = f"{Color.RED}{status}{Color.ENDC}"
+
+        return f"Task #{self.no} \t{status} \t{self.owner}->{processor} \t {self.get_timeline()} \t" \
+               f"{delay}"

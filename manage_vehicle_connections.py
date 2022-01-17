@@ -16,7 +16,6 @@ def add_to_connected_vehicles(vehicle):
     vehicle.connection_status = ConnectionStatus.CONNECTED
     if isinstance(vehicle, ProcessorVehicle):
         Simulation.task_organizer.add_to_available_task_processors(vehicle)
-        vehicle.iperf_server_process = vehicle.station.popen(f"iperf -s -y C")
     else:
         Simulation.task_generator.add_to_available_task_generators(vehicle)
 

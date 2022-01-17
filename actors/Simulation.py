@@ -13,6 +13,8 @@ class Simulation:
     bs_host = None
     nat_host = None
     nat_host_ip = None
+    cloud_server = None
+    cloud_server_ip = None
     task_assigner_host = None
     task_assigner_host_ip = None
     task_organizer = None
@@ -24,6 +26,9 @@ class Simulation:
     download_data = []
     number_of_reassigned_tasks = 0
     settings = None
+    real_life_start_time = time.strftime('%Y%m%d-%H%M%S')
+    results_file_name = f"results/{real_life_start_time}.pickle"
+    cloud_iperf_process = None
 
     @staticmethod
     def set_task_assigner(host):
@@ -36,3 +41,9 @@ class Simulation:
         Simulation.nat_host_ip = host.intfs[0].ip
         logging.info("NAT host name: %s ,ip: %s" % (host.name, Simulation.nat_host_ip))
         Simulation.nat_host = host
+
+    @staticmethod
+    def set_cloud_server(host):
+        Simulation.cloud_server_ip = host.intfs[0].ip
+        logging.info("Cloud_server name: %s ,ip: %s" % (host.name, Simulation.cloud_server_ip))
+        Simulation.cloud_server = host

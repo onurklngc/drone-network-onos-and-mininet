@@ -94,8 +94,7 @@ class ProcessorVehicle(Vehicle):
             process_time = task.get_process_time(self.process_speed)
             task.start_processing(current_time, process_time)
             self.currently_processed_task_end_time = current_time + process_time
-            new_event = Event(EventType.PROCESS_COMPLETE, task, self.currently_processed_task_end_time)
-            EventManager.add_event(self.currently_processed_task_end_time, new_event)
+
 
     def start_to_process_next_task(self, current_time):
         self.currently_processed_task = None
@@ -118,16 +117,6 @@ class ProcessorVehicle(Vehicle):
         logging.info(f"{self.sumo_id}({self.station.name}): the earliest time to process a new task is estimated as "
                      f"{next_task_start_time}")
         return next_task_start_time
-
-    def leave(self, leave_time):
-        if self.iperf_server_process:
-            self.iperf_server_process.kill()
-            out, err = self.iperf_server_process.communicate()
-            logging.info(f"{self.sumo_id}({self.station.name} iperf server log out: {out}\nerr:{err}")
-            log_file_name = f'logs_iperf/{Simulation.simulation_id}/{self.sumo_id}_{self.station.name}.log'
-            with open(log_file_name, 'wb') as log_file:
-                log_file.write(out)
-        super().leave(leave_time)
 
 
 class TaskGeneratorVehicle(Vehicle):

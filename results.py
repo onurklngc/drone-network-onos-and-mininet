@@ -13,6 +13,7 @@ def create_simulation_results_data():
     #     vehicle.station = vehicle.station.name
     results = {"settings": Simulation.settings,
                "current_time": Simulation.current_time,
+               "simulation_id": Simulation.simulation_id,
                "tasks": [task.get_result() for task in Simulation.tasks],
                # "vehicles": Simulation.all_vehicles,
                "drone_id_close_to_bs": Simulation.drone_id_close_to_bs,
@@ -36,4 +37,6 @@ if __name__ == '__main__':
     list_of_files = glob.glob('results/*')
     latest_file = max(list_of_files, key=os.path.getctime)
     sim_results = get_simulation_results(latest_file)
-    logging.info(sim_results, sort_keys=True, indent=4)
+    logging.info(f"Current time: {sim_results['current_time']}")
+    for task in sim_results["tasks"]:
+        logging.info(task)

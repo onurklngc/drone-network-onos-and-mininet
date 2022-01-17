@@ -1,5 +1,6 @@
 import logging
 import random
+import sys
 
 from mininet.log import info
 from mininet.node import RemoteController, Controller
@@ -196,6 +197,17 @@ def create_topology(drone_mover):
         Simulation.set_task_assigner(Simulation.controller_host)
     elif s.TASK_ASSIGNER_SERVER == "BS_HOST":
         Simulation.set_task_assigner(Simulation.bs_host)
+    else:
+        logging.error("Wrong TASK_ASSIGNER_SERVER setting!")
+        sys.exit(1)
+
+    if s.CLOUD_SERVER == "NAT":
+        Simulation.set_cloud_server(Simulation.nat_host)
+    elif s.CLOUD_SERVER == "BS_HOST":
+        Simulation.set_cloud_server(Simulation.bs_host)
+    else:
+        logging.error("Wrong CLOUD_SERVER setting!")
+        sys.exit(1)
 
     c0.start()
 

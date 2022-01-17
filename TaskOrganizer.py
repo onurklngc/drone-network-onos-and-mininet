@@ -9,7 +9,7 @@ from actors.EventManager import EventManager, EventType
 from actors.Simulation import Simulation
 from actors.Task import Task, Status
 from actors.TrafficObserver import TrafficObserver
-from actors.Vehicle import TaskGeneratorVehicle
+from actors.Vehicle import TaskGeneratorVehicle, ProcessorVehicle
 from actors.constant import Color
 from dispatch_tasks import send_task_data_to_cloud, send_task_data_to_processor
 from sumo_traci import SumoVehicle
@@ -77,8 +77,8 @@ class TaskOrganizer:
             if state is not None:
                 task = self.active_tasks[task_no]
                 self.download_processes.pop(task_no)
-                if task.status in [Status.TASK_OWNER_LEFT, Status.ASSIGNED_PROCESSOR_LEFT]:
-                    logging.info(f"{Color.ORANGE}Task #{task_no} was {task.status}. Skipping...{Color.ENDC}")
+                if task.status in [Status.OWNER_LEFT, Status.PROCESSOR_LEFT]:
+                    logging.info(f"{Color.ORANGE}Task #{task_no} was {task.status.name}. Skipping...{Color.ENDC}")
                     continue
                 destination = "Cloud" if task.is_assigned_to_cloud else task.assigned_processor.station.name
                 logging.info(f"{Color.ORANGE}Task #{task_no} data is transferred: "
@@ -87,6 +87,10 @@ class TaskOrganizer:
                 if err:
                     logging.info(
                         f"Err for task #{task.no}: {err}")
+                    if task.is_assigned_to_cloud:
+                        Simulation.nat_host.popen("ping -c 3 %s" % task.owner.station.wintfs[0].ip)
+                    else:
+                        task.assigned_processor.station.popen("ping -c 3 %s" % task.owner.station.wintfs[0].ip)
                     defaults = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
                     self.download_processes[task_no] = subprocess.Popen(process.args, **defaults)
                     continue
@@ -180,21 +184,34 @@ class TaskOrganizer:
         logging.debug(f"Generator vehicle is removed: {vehicle_id}")
 
     def handle_vehicle_departure(self, vehicle):
+        is_processor = isinstance(vehicle, ProcessorVehicle)
+        if is_processor and vehicle.iperf_server_process:
+            vehicle.iperf_server_process.kill()
+            out, err = vehicle.iperf_server_process.communicate()
+            logging.info(f"{vehicle.sumo_id}({vehicle.station.name}) iperf server log out: {out}\nerr:{err}")
+            log_file_name = f'logs_iperf/{Simulation.real_life_start_time}/{vehicle.sumo_id}_{vehicle.station.name}.log'
+            with open(log_file_name, 'wb') as log_file:
+                log_file.write(out)
         for task in vehicle.task_list:
-            is_task_owner = task.owner == vehicle
-            if task.status in [Status.TX_CLOUD, Status.TX_PROCESSOR]:
-                if is_task_owner:
-                    task.status = Status.TASK_OWNER_LEFT
-                    logging.error(
-                        f"{Color.RED}Task #{task.no} owner {vehicle.station.name} is left the area.{Color.ENDC}")
-                    task.tx_process.kill()
-                else:
-                    task.status = Status.ASSIGNED_PROCESSOR_LEFT
-                    logging.error(
-                        f"{Color.RED}Task #{task.no} processor {task.assigned_processor.station.name} is left the area."
-                        f"Reassigning the task.{Color.ENDC}")
-                    Simulation.number_of_reassigned_tasks += 1
-                    self.add_task(Simulation.current_time, task)
+            if task.status not in [Status.TX_CLOUD, Status.TX_PROCESSOR, Status.ON_POOL]:
+                continue
+            if task in self.pool:
+                self.pool.remove(task)
+            if is_processor:
+                task.status = Status.PROCESSOR_LEFT
+                logging.error(
+                    f"{Color.RED}Task #{task.no} processor {vehicle.station.name} is left the area."
+                    f"Reassigning the task.{Color.ENDC}")
+                Simulation.number_of_reassigned_tasks += 1
+                self.add_task(Simulation.current_time, task)
+            else:
+                task.status = Status.OWNER_LEFT
+                logging.error(
+                    f"{Color.RED}Task #{task.no} owner {vehicle.station.name} is left the area.{Color.ENDC}")
+            if task.tx_process:
+                task.tx_process.kill()
+            if task.no in self.download_processes:
+                self.download_processes.pop(task.no)
 
 
 if __name__ == '__main__':
