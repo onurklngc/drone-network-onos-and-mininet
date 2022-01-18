@@ -32,7 +32,7 @@ def send_task_request_to_task_assigner(task_assigner_host_ip, task):
 
 
 def send_task_data_to_cloud(cloud_server, cloud_ip, task, log_server_ip):
-    logging.info(f"{Color.BLUE}Task #{task.no}: {task.owner.station.name}->Cloud{Color.ENDC}")
+    logging.info(f"{Color.BLUE}Task#{task.no}: {task.owner.station.name}->Cloud{Color.ENDC}")
     mn_station = task.owner.station
     # cmd_output = mn_station.cmd("ping -c 1 %s" % cloud_ip)
     # logging.info("Ping result: %s" % cmd_output)
@@ -42,8 +42,8 @@ def send_task_data_to_cloud(cloud_server, cloud_ip, task, log_server_ip):
     server_process = cloud_server.popen(server_command)
     task.server_process = server_process
 
-    task_identifier = f"{task.no},{task.owner.sumo_id},{mn_station.name},cloud,{cloud_server.name}"
-    command = get_send_file_command(cloud_ip, iperf_port, task.size, task_identifier, s.NAT_HOST_ID, log_server_ip)
+    command = get_send_file_command(cloud_ip, iperf_port, task.size, task.get_task_identifier(), s.NAT_HOST_ID,
+                                    log_server_ip)
     logging.info("Command to be called: %s" % command)
     data_send_process = mn_station.popen(command)
     cloud_processes[task.no] = data_send_process
@@ -63,8 +63,7 @@ def send_task_data_to_processor(task, log_server_ip):
 
     dst_station.popen("ping -c 5 %s" % src_station.wintfs[0].ip)
 
-    task_identifier = f"{task.no},{task.owner.sumo_id},{src_station.name},{dst_station.sumo_id},{dst_station.name}"
-    command = get_send_file_command(dst_station_ip, iperf_port, task.size, task_identifier, s.NAT_HOST_ID,
+    command = get_send_file_command(dst_station_ip, iperf_port, task.size, task.get_task_identifier(), s.NAT_HOST_ID,
                                     log_server_ip)
     logging.info("Command to be called: %s" % command)
     data_send_process = src_station.popen(command)

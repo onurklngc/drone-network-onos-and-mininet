@@ -60,10 +60,10 @@ class TaskOrganizer:
                 self.active_tasks.pop(event.task.no)
                 event.task.status = Status.COMPLETED
                 if event.task.is_assigned_to_cloud:
-                    logging.info(f"Task #{event.task.no} process on cloud is complete.")
+                    logging.info(f"Task#{event.task.no} process on cloud is complete.")
                 else:
                     processor = event.task.assigned_processor
-                    logging.info(f"Task #{event.task.no} process on processor {processor.sumo_id} is complete.")
+                    logging.info(f"Task#{event.task.no} process on processor {processor.sumo_id} is complete.")
                     processor.start_to_process_next_task(current_time)
 
     @staticmethod
@@ -77,15 +77,15 @@ class TaskOrganizer:
                 task = self.active_tasks[task_no]
                 self.download_processes.pop(task_no)
                 if task.status in [Status.OWNER_LEFT, Status.PROCESSOR_LEFT]:
-                    logging.info(f"{Color.ORANGE}Task #{task_no} was {task.status.name}. Skipping...{Color.ENDC}")
+                    logging.info(f"{Color.ORANGE}Task#{task_no} was {task.status.name}. Skipping...{Color.ENDC}")
                     continue
                 destination = "Cloud" if task.is_assigned_to_cloud else task.assigned_processor.station.name
-                logging.info(f"{Color.ORANGE}Task #{task_no} data is transferred: "
+                logging.info(f"{Color.ORANGE}Task#{task_no} data is transferred: "
                              f"{task.owner.station.name}->{destination}{Color.ENDC}")
                 out, err = process.communicate()
                 if err:
                     logging.info(
-                        f"Err for task #{task.no}: {err}")
+                        f"Err for Task#{task.no}: {err}")
                     if task.is_assigned_to_cloud:
                         Simulation.cloud_server.popen("ping -c 3 %s" % task.owner.station.wintfs[0].ip)
                     else:
@@ -93,8 +93,9 @@ class TaskOrganizer:
                     defaults = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
                     self.download_processes[task_no] = subprocess.Popen(process.args, **defaults)
                     continue
-                logging.info(f"Out: {out}")
-                Simulation.upload_reports.append(out)
+                task_identifier = task.get_task_identifier()
+                logging.info(f"Upload data report({task_identifier}):\n{out.decode}")
+                Simulation.upload_reports[task_identifier] = out
                 task.server_process.kill()
                 task.server_process.wait()
                 task.set_tx_complete(current_time)
@@ -103,7 +104,7 @@ class TaskOrganizer:
         task_scores = []
         for task in self.pool:
             if task.owner.station.wintfs[0].associatedTo is None:
-                logging.error(f"Task #{task.no} owner {task.owner.station.name} is disconnected")
+                logging.error(f"Task#{task.no} owner {task.owner.station.name} is disconnected")
                 continue
             best_matching_for_task = None
             for processor in processors:
@@ -226,7 +227,7 @@ class TaskOrganizer:
             if is_processor:
                 task.status = Status.PROCESSOR_LEFT
                 logging.error(
-                    f"{Color.RED}Task #{task.no} processor {vehicle.station.name} is left the area."
+                    f"{Color.RED}Task#{task.no} processor {vehicle.station.name} is left the area."
                     f"Reassigning the task.{Color.ENDC}")
                 Simulation.number_of_reassigned_tasks += 1
                 self.add_task(Simulation.current_time, task)
@@ -235,7 +236,7 @@ class TaskOrganizer:
             else:
                 task.status = Status.OWNER_LEFT
                 logging.error(
-                    f"{Color.RED}Task #{task.no} owner {vehicle.station.name} is left the area.{Color.ENDC}")
+                    f"{Color.RED}Task#{task.no} owner {vehicle.station.name} is left the area.{Color.ENDC}")
                 if task.is_assigned_to_cloud:
                     TrafficObserver.decrement_traffic_on_cloud()
                 else:

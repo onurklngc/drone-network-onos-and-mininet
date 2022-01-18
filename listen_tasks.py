@@ -9,7 +9,7 @@ number_of_tasks_received = 0
 def get_task_request(accepted_socket):
     global number_of_tasks_received
     message = accepted_socket.recv(1024).decode()
-    logging.info(f"Received task #{number_of_tasks_received}-> {message}")
+    logging.info(f"Received Task#{number_of_tasks_received}-> {message}")
     accepted_socket.send(f"Number of tasks received : {number_of_tasks_received}".encode())
     accepted_socket.close()
     number_of_tasks_received += 1

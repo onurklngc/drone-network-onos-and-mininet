@@ -3,6 +3,7 @@ from enum import Enum
 
 import settings as s
 from actors.EventManager import EventManager, Event, EventType
+from actors.Simulation import Simulation
 from actors.TrafficObserver import TrafficObserver
 from actors.constant import Color
 
@@ -59,16 +60,16 @@ class Task:
         self.server_process = None
 
     def __str__(self) -> str:
-        return f"Task #{self.no} from {self.owner.station.name}: {self.status.name}\t" \
+        return f"Task#{self.no} from {self.owner.station.name}: {self.status.name}\t" \
                f"{self.start_time}-{self.end_time or 'Current'} {'(Cloud)' if self.is_assigned_to_cloud else ''}"
 
     def get_task_origin_data(self) -> str:
-        return f"Task #{self.no} started at time {self.start_time} is from {self.owner.station.name} connected to" \
+        return f"Task#{self.no} started at time {self.start_time} is from {self.owner.station.name} connected to" \
                f" {self.owner.station.wintfs[0].associatedTo}"
 
     def calculate_delay(self):
         self.delay = self.end_time - self.deadline
-        logging.info(f"Delay on task #{self.no} is {self.delay}")
+        logging.info(f"Delay on Task#{self.no} is {self.delay}")
         return self.delay
 
     def get_prioritized_delay(self):
@@ -129,7 +130,7 @@ class Task:
         self.tx_end_time = current_time
         transfer_time = current_time - self.tx_start_time
         estimated_tx = self.estimated_tx_end_time - self.tx_start_time
-        logging.info(f"Task #{self.no}'s {self.size}KB data is transfer in "
+        logging.info(f"Task#{self.no}'s {self.size}KB data is transfer in "
                      f"{Color.RED}{transfer_time:.1f}{Color.ENDC} s, "
                      f"estimated was {Color.GREEN}{estimated_tx}{Color.ENDC} s")
         TrafficObserver.decrement_traffic_on_sta(self.owner.station.name)
@@ -147,6 +148,13 @@ class Task:
 
     def get_result(self):
         return TaskResult(self)
+
+    def get_task_identifier(self):
+        if self.is_assigned_to_cloud:
+            assigned = f"cloud,{Simulation.cloud_server.name}"
+        else:
+            assigned = f"{self.assigned_processor.sumo_id}({self.assigned_processor.station.name})"
+        return f"Task#{self.no} {self.owner.sumo_id}({self.owner.station.name})->{assigned}"
 
 
 class TaskResult:
@@ -233,5 +241,5 @@ class TaskResult:
         elif self.status in [Status.OWNER_LEFT, Status.PROCESSOR_LEFT]:
             status = f"{Color.RED}{status}{Color.ENDC}"
 
-        return f"Task #{self.no} \t{status} \t{self.owner}->{processor} \t {self.get_timeline()} \t" \
+        return f"Task#{self.no} \t{status} \t{self.owner}->{processor} \t {self.get_timeline()} \t" \
                f"{delay}"

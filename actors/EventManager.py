@@ -14,7 +14,7 @@ class Event:
         self.time = time
 
     def __str__(self) -> str:
-        return f"{self.time} -> {self.event_type.name} for task #{self.task.no}"
+        return f"{self.time} -> {self.event_type.name} for Task#{self.task.no}"
 
 
 class EventManager:

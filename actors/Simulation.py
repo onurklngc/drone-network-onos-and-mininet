@@ -23,7 +23,7 @@ class Simulation:
     connecting_vehicles = {}
     tasks = []
     events = {}
-    upload_reports = []
+    upload_reports = {}
     number_of_reassigned_tasks = 0
     settings = None
     real_life_start_time = time.strftime('%Y%m%d-%H%M%S')

@@ -81,7 +81,7 @@ class ProcessorVehicle(Vehicle):
         task.set_processor(self)
         self.remaining_queue_size -= task.size
         self.estimate_all_tasks_processed_time(current_time)
-        logging.info(f"{Color.GREEN}Task #{task.no}: {task.owner.station.name}->"
+        logging.info(f"{Color.GREEN}Task#{task.no}: {task.owner.station.name}->"
                      f"{self.station.name}(Remaining:{self.remaining_queue_size}KB){Color.ENDC}")
 
     def get_next_waiting_task(self):
@@ -134,7 +134,7 @@ class ProcessorVehicle(Vehicle):
     def drop_task(self, current_time, task):
         if task in self.queue:
             self.queue.remove(task)
-            logging.info(f"Dropping task #{task.no}")
+            logging.info(f"Dropping Task#{task.no}")
         self.start_to_process_next_task(current_time)
 
 

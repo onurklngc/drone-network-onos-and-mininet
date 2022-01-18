@@ -78,7 +78,7 @@ def get_estimated_tx_time_between_stations(given_time, sta1, sta2, task):
     sta1_data_rate = get_station_bw(given_time, sta1, are_sharing_same_interface)
     sta2_data_rate = get_station_bw(given_time, sta2, are_sharing_same_interface)
     estimated_tx_time = task.size / min(sta1_data_rate, sta2_data_rate)
-    logging.info(f"Estimated task #{task.no} tx time: {estimated_tx_time} {sta1.name}->{sta2.name}")
+    logging.info(f"Estimated Task#{task.no} tx time: {estimated_tx_time} {sta1.name}->{sta2.name}")
     return estimated_tx_time
 
 
@@ -86,7 +86,7 @@ def get_estimated_tx_time_station_to_cloud(given_time, task):
     sta = task.owner.station
     sta_data_rate = get_station_bw(given_time, sta, 0)
     estimated_tx_time = task.size / min(sta_data_rate, get_cloud_bw())
-    logging.info(f"Estimated task #{task.no} tx time: {estimated_tx_time} {sta.name}->{Color.BLUE}Cloud{Color.ENDC}")
+    logging.info(f"Estimated Task#{task.no} tx time: {estimated_tx_time} {sta.name}->{Color.BLUE}Cloud{Color.ENDC}")
     return estimated_tx_time
 
 
