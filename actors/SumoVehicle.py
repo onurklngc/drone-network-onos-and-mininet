@@ -2,6 +2,8 @@ import logging
 import os
 import sys
 
+from actors.Simulation import Simulation
+
 if 'SUMO_HOME' not in os.environ:
     logging.warning("SUMO_HOME not in env, trying to add!")
     os.environ["SUMO_HOME"] = "/usr/share/sumo"
@@ -53,3 +55,4 @@ class SumoVehicle:
         if self.role_object and route_completion_ratio > 0.75 and not self.role_object.is_leaving_soon:
             logging.info(f"{self.sumo_id} completed {100 * current_route_index / self.route_length:.0f}% of its route")
             self.role_object.is_leaving_soon = True
+            Simulation.record.vehicles[self.sumo_id].no_new_task_start_time = Simulation.current_time + 1

@@ -10,6 +10,7 @@ from mn_wifi.net import Mininet_wifi
 from mn_wifi.wmediumdConnector import interference
 
 import settings as s
+from actors.Record import VehicleMoment
 from actors.Simulation import Simulation
 from link_manager import LinkManager
 from manage_vehicle_connections import add_to_connected_vehicles, set_vehicle_as_disconnected
@@ -43,11 +44,11 @@ def update_station_locations_on_mn(vehicle_data_list):
         vehicle_position_xyz = sumo_vehicle.position
         mn_sta = vehicle_to_mn_sta[vehicle_sumo_id]
         mn_sta.setPosition(",".join(format(p, "10.3f") for p in vehicle_position_xyz))
-        # sta_ap_distance = mn_sta.get_distance_to(mn_sta.wintfs[0].associatedTo.node)
-        # if mn_sta.wintfs[0].associatedTo and s.AP_GROUND_RANGE < sta_ap_distance:
-        #     mn_sta.wintfs[0].disconnect_pexec(mn_sta.wintfs[0].associatedTo)
-        #     logging.error("Disconnecting station from AP since they are %d meter far away." % sta_ap_distance)
-        # mn_car.update_2d() # Mathplotlib is bugged.
+        vehicle_moment = VehicleMoment(vehicle_sumo_id, Simulation.current_time, vehicle_position_xyz[0],
+                                       vehicle_position_xyz[1])
+        if mn_sta.wintfs[0].associatedTo:
+            vehicle_moment.set_associated_ap(mn_sta.wintfs[0].associatedTo.node.name)
+        Simulation.record.vehicles[vehicle_sumo_id].add_moment(vehicle_moment)
 
 
 def add_ap_ap_links(net, drone_ap_by_id, drone_mover, link_manager):

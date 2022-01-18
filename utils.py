@@ -90,12 +90,10 @@ def get_estimated_tx_time_station_to_cloud(given_time, task):
     return estimated_tx_time
 
 
-def write_simulation_results(results, filename):
+def write_as_pickle(results, filename):
     with open(filename, 'wb') as handle:
-        try:
-            pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        except:
-            pass
+        pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 
 def get_settings_to_simulation_object():

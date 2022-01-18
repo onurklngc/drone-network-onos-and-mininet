@@ -155,22 +155,4 @@ class TaskGeneratorVehicle(Vehicle):
         return total
 
 
-class VehicleMoment:
-    sumo_id = None
-    step = None
-    x = None
-    y = None
-    associated_ap = None
 
-    def __init__(self, sumo_id, step, x, y):
-        self.sumo_id = sumo_id
-        self.step = step
-        self.x = x
-        self.y = y
-        self.associated_ap = None
-
-    def set_associated_ap(self, ap_name):
-        self.associated_ap = ap_name
-
-    def __str__(self) -> str:
-        return f"{self.sumo_id}|step:{self.step}|x:{self.x}|y:{self.y}"

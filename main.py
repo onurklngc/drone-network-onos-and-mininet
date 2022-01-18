@@ -14,6 +14,7 @@ import settings as s
 from TaskGenerator import TaskGenerator
 from TaskOrganizer import TaskOrganizer
 from actors.Simulation import Simulation
+from actors.Record import SimulationRecord
 from clean import stop_children_processes
 from drone_movement import DroneMover
 from drone_operator import DroneOperator
@@ -25,7 +26,7 @@ from results import create_simulation_results_data
 from sumo_interface import disassociate_sumo_vehicles_leaving_area, \
     associate_sumo_vehicles_with_mn_stations, update_drone_locations_on_sumo, add_aps_as_poi_to_sumo
 from sumo_traci import SumoManager
-from utils import get_wait_time, write_simulation_results, get_settings_to_simulation_object
+from utils import get_wait_time, write_as_pickle, get_settings_to_simulation_object
 
 simulation_id = str(int(time.time() // 10))
 processes = []
@@ -70,7 +71,7 @@ def simulate_sumo(sumo_manager, drone_mover):
         # logging.info("Time it 7")
         step_end_time = time.time()
         wait_time = get_wait_time(step_start_time, step_end_time, s.SIMULATION_STEP_DELAY / 1000.0)
-        write_simulation_results(create_simulation_results_data(), Simulation.results_file_name)
+        write_as_pickle(create_simulation_results_data(), Simulation.results_file_name)
         time.sleep(wait_time)
 
 
@@ -99,6 +100,7 @@ if __name__ == '__main__':
     os.mkdir(f"logs_iperf/{Simulation.real_life_start_time}")
     controller_utils.delete_all_links()
     setLogLevel(s.MN_WIFI_LOG_LEVEL.lower())
+    Simulation.record = SimulationRecord(Simulation.simulation_id, Simulation.real_life_start_time)
     Simulation.task_organizer = TaskOrganizer()
     Simulation.task_generator = TaskGenerator()
     current_drone_mover = DroneMover()
@@ -114,7 +116,8 @@ if __name__ == '__main__':
     # CLI(net)
     simulate_sumo(manager, current_drone_mover)
     # stop_servers()
-    write_simulation_results(create_simulation_results_data(), Simulation.results_file_name)
+    write_as_pickle(Simulation.record, Simulation.record_file_name)
+    write_as_pickle(create_simulation_results_data(), Simulation.results_file_name)
     CLI(net)
     del manager
     net.stop()

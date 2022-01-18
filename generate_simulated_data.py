@@ -58,14 +58,14 @@ def get_associated_ap(drone_mover, v_moment, associated_ap):
         logging.debug(
             f"{v_moment.sumo_id}({v_moment.x},{v_moment.y}) distance to AP{associated_ap + 1}, "
             f"distance {distance:.1f} at time {v_moment.step}.")
-        if distance > s.AP_GROUND_RANGE:
+        if distance > s.AP_DIRECT_RANGE:
             v_moment.associated_ap = None
             return get_associated_ap(drone_mover, v_moment, v_moment.associated_ap)
         else:
             v_moment.associated_ap = associated_ap
     else:
         closest_ap_index, distance = get_closest_ap(drone_mover, v_moment.x, v_moment.y)
-        if distance < s.AP_GROUND_RANGE - 10:
+        if distance < s.AP_DIRECT_RANGE:
             logging.info(f"{v_moment.sumo_id}({v_moment.x},{v_moment.x}) is close to AP{closest_ap_index + 1},"
                         f" distance {distance:.1f} at time {v_moment.step}.")
             v_moment.associated_ap = closest_ap_index

@@ -74,8 +74,8 @@ def send_task_data_to_processor(task, log_server_ip):
 
 def get_send_file_command(target_ip, target_port, data_size, task_data, target_id, log_server_ip):
     if s.USE_IPERF:
-        command = "iperf3 -c {0} -p {1} -n {2}KB -f K -Z --extra-data {3}".format(target_ip, target_port, data_size,
-                                                                                  task_data)
+        command = "iperf3 -c {0} -p {1} -n {2}KB -f K -Z -i 10 --extra-data {3}".format(target_ip, target_port,
+                                                                                        data_size, task_data)
     else:
         command = "ITGSend -a {0} -T TCP -C 100000 -c 1408 -k {1} -L {2} TCP -l {3}/{4}.log " \
                   "-Sdp {5} -rp {7} -j 1 -poll" \

@@ -1,8 +1,8 @@
 import logging
 
 import settings as s
+from actors.Record import VehicleRecord, ApMoment, ApRecord
 from actors.Simulation import Simulation
-from actors.TrafficObserver import TrafficObserver
 from actors.Vehicle import ProcessorVehicle, TaskGeneratorVehicle
 from manage_vehicle_connections import add_to_connecting_vehicles, set_vehicle_as_left
 
@@ -25,6 +25,7 @@ def add_aps_as_poi_to_sumo(net, sumo_manager):
             sumo_manager.add_bs(s.AP_NAME_PREFIX + str(bs_id), ap_location[0], ap_location[1])
         else:
             sumo_manager.add_uav(ap.name, ap_location[0], ap_location[1])
+            Simulation.record.aps[ap.name] = ApRecord(ap.name)
 
 
 def update_drone_locations_on_sumo(net, sumo_manager):
@@ -32,6 +33,8 @@ def update_drone_locations_on_sumo(net, sumo_manager):
         ap_location = ap.getxyz()
         if not ap.name.startswith("bs"):
             sumo_manager.set_uav_location(ap.name, ap_location[0], ap_location[1], Simulation.current_time)
+            Simulation.record.aps[ap.name].add_moment(ApMoment(ap.name, Simulation.current_time,
+                                                               ap_location[0], ap_location[1], ap_location[2]))
 
 
 def disassociate_sumo_vehicles_leaving_area(leaving_vehicle_id_list, vehicle_to_mn_sta):
@@ -42,15 +45,18 @@ def disassociate_sumo_vehicles_leaving_area(leaving_vehicle_id_list, vehicle_to_
         sta_to_be_disassociated.setPosition(s.UNASSOCIATED_CAR_LOCATION)
         unassociated_mn_stations.append(sta_to_be_disassociated)
         set_vehicle_as_left(vehicle_sumo_id)
+        Simulation.record.vehicles[vehicle_sumo_id].departure_time = Simulation.current_time
         logging.info("Disassociated vehicle %s from mn car %s", vehicle_sumo_id, sta_to_be_disassociated.name)
 
 
-def add_vehicle(sumo_vehicle, car_to_be_associated, current_time):
+def add_vehicle(sumo_vehicle, sta_to_be_associated, current_time):
+    vehicle_record = VehicleRecord(sumo_vehicle.sumo_id, sta_to_be_associated.name, sumo_vehicle.type_abbreviation,
+                                   current_time)
+    Simulation.record.vehicles[sumo_vehicle.sumo_id] = vehicle_record
     if sumo_vehicle.type_abbreviation in s.PROCESSOR_VEHICLE_TYPES:
-        vehicle = ProcessorVehicle(sumo_vehicle, car_to_be_associated, current_time)
-        # vehicle.iperf_server_processes = vehicle.station.popen("iperf -s -y C")
+        vehicle = ProcessorVehicle(sumo_vehicle, sta_to_be_associated, current_time)
     else:
-        vehicle = TaskGeneratorVehicle(sumo_vehicle, car_to_be_associated, current_time)
+        vehicle = TaskGeneratorVehicle(sumo_vehicle, sta_to_be_associated, current_time)
     add_to_connecting_vehicles(vehicle)
 
 
