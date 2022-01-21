@@ -1,24 +1,29 @@
 # MAIN
 # ASSIGNMENT_METHOD = "AGGRESSIVE"  # AGGRESSIVE, ADAPTIVE or OPTIMAL
+TASK_FAILURE_PENALTY_OFFSET = 60
 ASSIGNMENT_METHOD = "ADAPTIVE"  # AGGRESSIVE, ADAPTIVE or OPTIMAL
+OPTIMALITY_FILE = "records/record_20220121-031650.pickle"
 SIMULATION_DURATION = 1000
 TASK_GENERATION_START_TIME = 150
 TASK_GENERATION_END_TIME = 750
-TASK_GENERATION_INTERVAL = 8
-TASK_SIZE = (20000, 30000)
+TASK_GENERATION_INTERVAL = 5
+TASK_SIZE = (30000, 40000)
 DEADLINE = (50, 120)
 LOG_LEVEL = "INFO"
 # LOG_LEVEL = "DEBUG"
 MN_WIFI_LOG_LEVEL = "INFO"
 NUMBER_OF_DRONES = 9
-NUMBER_OF_STATIONS = 25
+NUMBER_OF_STATIONS = 30
 IS_REMOTE_CONTROLLER = True
-GENERATOR_ACTIVE_TASKS_MAX = 3
+GENERATOR_ACTIVE_TASKS_MAX = 2
 WAIT_PREVIOUS_TASK_TO_BE_PROCESSED = True
+ALLOWED_MAX_TX_TIME = 250
 
 # RANDOMNESS CONTROL
+USE_RECORD = False
+RECORD_FILE = "records/record_20220121-031650.pickle"
 USE_RANDOM_SUMO_SEED = False
-SUMO_SEED_TO_USE = 1
+SUMO_SEED_TO_USE = 5
 SELECT_RANDOM_DRONE_FOR_BS_CONNECTION = False
 DRONE_ID_CLOSE_TO_BS = 0
 
@@ -28,7 +33,7 @@ FIGURE_8_DRONE_MOVEMENT = True
 FIGURE_8_ALPHA_VAR = 10
 FIGURE_8_PERIOD = 20
 COORDINATE_LIMIT_X = (0, 1500)
-COORDINATE_LIMIT_Y = (-150, 1350)
+COORDINATE_LIMIT_Y = (-50, 1250)
 UNASSOCIATED_CAR_LOCATION = "-9999,-9999,1"
 AVERAGE_HEIGHT = 100
 BS_HEIGHT = 10
@@ -44,7 +49,7 @@ VEHICLE_PREFIX = "veh"
 START_SIMULATION_DIRECTLY = True
 SUMO_DELAY = 1  # in ms
 SIMULATION_STEP_DELAY = 1000  # in ms
-VEHICLE_CATEGORY_DISTRIBUTION = ['E'] * 5 + ['T'] * 4 + ['A'] * 2 + ['B'] * 2 + ['P'] * 3
+VEHICLE_CATEGORY_DISTRIBUTION = ['E'] * 5 + ['T'] * 10 + ['A'] * 3 + ['B'] * 5 + ['P'] * 24
 DEFAULT_VEHICLE_CLASS = "passenger"
 HIGHLIGHT_CARS = False
 HIGHLIGHT_AP_RANGE = True
@@ -58,9 +63,9 @@ VEHICLE_TYPE_PROPERTIES = {
           "priority": 0.3, "type_abbreviation": "T"},
     # Processors
     "A": {"type": "trailer", "shape": "truck/semitrailer", "color": "purple",
-          "process_speed": 2500, "queue_size": 75000, "type_abbreviation": "A"},
+          "process_speed": 2000, "queue_size": 100000, "type_abbreviation": "A"},
     "B": {"type": "bus", "shape": "bus", "color": "cyan",
-          "process_speed": 2000, "queue_size": 50000, "type_abbreviation": "B"},
+          "process_speed": 1500, "queue_size": 70000, "type_abbreviation": "B"},
     # Other
     "V": {"type": "vip", "shape": "vip", "color": "magenta", "type_abbreviation": "V"},
     "P": {"type": "private", "shape": "passenger/sedan", "color": "pink", "type_abbreviation": "P"},
@@ -70,7 +75,7 @@ AP_AP_RSSI = -50
 WIFI_NOISE_THRESHOLD = -80
 REAL_LIFE_RANGE_COEFFICIENT = 0.85
 AP_AP_RANGE = 450 * REAL_LIFE_RANGE_COEFFICIENT
-AP_GROUND_RANGE = 351 * REAL_LIFE_RANGE_COEFFICIENT  # 368 * cos(15.9) = 351
+AP_GROUND_RANGE = 330 * REAL_LIFE_RANGE_COEFFICIENT  # 368 * cos(15.9) = 351
 AP_DIRECT_RANGE = 368 * REAL_LIFE_RANGE_COEFFICIENT  # Used for simulation data generation
 # POWER
 ANTENNA_GAIN = 3
@@ -92,10 +97,11 @@ DITG_CONTROL_PORTS = []
 
 # CLOUD
 NAT_HOST_ID = 211
-CLOUD_PROCESSOR_SPEED = 4000
+CLOUD_PROCESSOR_SPEED = 3000
+USE_PROBABILITY_CLOUD_SELECTION = False
 CLOUD_PROBABILITY_BY_POOL_SIZE = {
     0: 0,
-    3: 0.2,
+    3: 0.3,
     7: 0.7,
     10: 0.9
 }

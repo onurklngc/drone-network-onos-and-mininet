@@ -26,7 +26,7 @@ def topology():
 
     info("*** Creating nodes\n")
 
-    sta1 = net.addStation('sta1', mac='00:00:00:00:00:11', antennaGain=ANTENNA_GAIN, position='125,1,0')
+    sta1 = net.addStation('sta1', mac='00:00:00:00:00:11', antennaGain=ANTENNA_GAIN, position='222,1,0')
     sta2 = net.addStation('sta2', mac='00:00:00:00:00:12', antennaGain=ANTENNA_GAIN, position='151,51,0')
     ap1 = net.addAccessPoint('ap1', wlans=2, ssid='ssid1', antennaGain=ANTENNA_GAIN, position='300,10,100', channel=1,
                              protocols='OpenFlow13')
@@ -56,9 +56,9 @@ def topology():
     info("*** Associating Stations\n")
     # net.addLink(ap1, sta1, ht_cap='HT40+')
     # net.addLink(ap2, sta2, ht_cap='HT40+')
-    net.addLink(h1, ap1, bw=100, delay='0ms')
+    net.addLink(h1, ap1, bw=54, delay='70ms')
     net.addLink(h2, ap2, bw=100, delay='0ms')
-    # net.addLink(ap1, ap2, bw=100, delay='0ms')
+    # net.addLink(ap1, ap2, bw=100, penalty='0ms')
     net.addLink(ap1, intf='ap1-wlan2', cls=mesh, ssid='mesh-ssid', mode=MESH_WIFI_MODE, channel=MESH_CHANNEL,
                 antennaGain=ANTENNA_GAIN, txpower=AP_MESH_TX_POWER)
     net.addLink(ap2, intf='ap2-wlan2', cls=mesh, ssid='mesh-ssid', mode=MESH_WIFI_MODE, channel=MESH_CHANNEL,

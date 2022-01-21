@@ -13,8 +13,8 @@ import controller_utils
 import settings as s
 from TaskGenerator import TaskGenerator
 from TaskOrganizer import TaskOrganizer
-from actors.Simulation import Simulation
 from actors.Record import SimulationRecord
+from actors.Simulation import Simulation
 from clean import stop_children_processes
 from drone_movement import DroneMover
 from drone_operator import DroneOperator
@@ -26,7 +26,7 @@ from results import create_simulation_results_data
 from sumo_interface import disassociate_sumo_vehicles_leaving_area, \
     associate_sumo_vehicles_with_mn_stations, update_drone_locations_on_sumo, add_aps_as_poi_to_sumo
 from sumo_traci import SumoManager
-from utils import get_wait_time, write_as_pickle, get_settings_to_simulation_object
+from utils import get_wait_time, write_as_pickle, get_settings_to_simulation_object, get_simulation_record
 
 simulation_id = str(int(time.time() // 10))
 processes = []
@@ -79,7 +79,7 @@ def start_host_roles(new_net):
     Simulation.task_assigner_host.popen("python listen_tasks.py")
     for station in new_net.stations:
         station.popen("ping %s" % Simulation.task_assigner_host_ip)
-        station.popen("ping %s" % Simulation.cloud_server_ip)
+        # station.popen("ping %s" % Simulation.cloud_server_ip)
     # if s.CLOUD_SERVER == "BS_HOST":
     #     Simulation.cloud_iperf_process = Simulation.cloud_server.popen("iperf -s -y C")
 
@@ -100,13 +100,22 @@ if __name__ == '__main__':
     os.mkdir(f"logs_iperf/{Simulation.real_life_start_time}")
     controller_utils.delete_all_links()
     setLogLevel(s.MN_WIFI_LOG_LEVEL.lower())
-    Simulation.record = SimulationRecord(Simulation.simulation_id, Simulation.real_life_start_time)
+    Simulation.record = SimulationRecord(Simulation.simulation_id, Simulation.real_life_start_time,
+                                         s.SKIPPED_STEPS + 1, s.SIMULATION_DURATION)
+    if s.USE_RECORD:
+        Simulation.old_record = get_simulation_record(s.RECORD_FILE)
+        vehicle_records = Simulation.old_record.vehicles
+        task_records = Simulation.old_record.tasks
+    else:
+        vehicle_records = None
+        task_records = None
+    Simulation.task_generator = TaskGenerator(task_records=task_records)
     Simulation.task_organizer = TaskOrganizer()
-    Simulation.task_generator = TaskGenerator()
     current_drone_mover = DroneMover()
     drone_operator = DroneOperator(current_drone_mover)
+    Simulation.task_organizer = TaskOrganizer()
     net = create_topology(current_drone_mover)
-    manager = SumoManager()
+    manager = SumoManager(vehicle_records=vehicle_records)
     add_aps_as_poi_to_sumo(net, manager)
     drone_operator.send_host_coordinates_on_controller(net)
     makeTerms(net.stations, 'station')
@@ -115,10 +124,10 @@ if __name__ == '__main__':
     start_host_roles(net)
     # CLI(net)
     simulate_sumo(manager, current_drone_mover)
-    # stop_servers()
     write_as_pickle(Simulation.record, Simulation.record_file_name)
-    write_as_pickle(create_simulation_results_data(), Simulation.results_file_name)
     CLI(net)
+    handle_tasks()
+    write_as_pickle(create_simulation_results_data(), Simulation.results_file_name)
     del manager
     net.stop()
     stop_children_processes([])

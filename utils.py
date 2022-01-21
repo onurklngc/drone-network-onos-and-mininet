@@ -58,7 +58,8 @@ def get_station_bw(given_time, sta, are_sharing_same_interface=0):
                                                                                  sta.wintfs[0].associatedTo)
     rssi_sta = sta.wintfs[0].rssi
     sta_data_rate = get_link_speed_by_rssi(rssi_sta) / (sta_associated_ap_traffic_load + 1 + are_sharing_same_interface)
-    logging.info(f"{sta.name} data_rate={sta_data_rate} (AP shared by {sta_associated_ap_traffic_load + 1}"
+    logging.info(f"{sta.name} data_rate={sta_data_rate} ({sta.wintfs[0].associatedTo.node.name} shared by "
+                 f"{sta_associated_ap_traffic_load + 1}"
                  f"+{are_sharing_same_interface})")
     return sta_data_rate
 
@@ -95,6 +96,10 @@ def write_as_pickle(results, filename):
         pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
+def read_pickle_file(filename):
+    with open(filename, 'rb') as handle:
+        return pickle.load(handle)
+
 
 def get_settings_to_simulation_object():
     simulation_settings = {}
@@ -105,3 +110,14 @@ def get_settings_to_simulation_object():
         del simulation_settings['__builtins__']
 
     return simulation_settings
+
+
+def get_simulation_record(filename):
+    return read_pickle_file(filename)
+
+
+
+if __name__ == '__main__':
+    record = get_simulation_record(s.RECORD_FILE)
+    ap_records = record.aps
+

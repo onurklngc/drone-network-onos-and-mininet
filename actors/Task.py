@@ -27,7 +27,7 @@ class Task:
     end_time = None
     priority = None
     deadline = None
-    delay = None
+    penalty = None
     size = None
     owner = None
     assigned_processor = None
@@ -38,6 +38,7 @@ class Task:
     processor_queue_arrival_time = None
     process_start_time = None
     process_end_time = None
+    owner_departure_time = None
 
     is_assigned_to_cloud = False
     is_waited_in_general_queue = True
@@ -58,33 +59,34 @@ class Task:
         self.estimated_tx_end_time = None
         self.tx_process = None
         self.server_process = None
+        self.ping_processes = []
 
-    def __str__(self) -> str:
-        return f"Task#{self.no} from {self.owner.station.name}: {self.status.name}\t" \
+    def __repr__(self) -> str:
+        return f"Task#{self.no}: {self.status.name} owner:{self.owner} " \
                f"{self.start_time}-{self.end_time or 'Current'} {'(Cloud)' if self.is_assigned_to_cloud else ''}"
 
     def get_task_origin_data(self) -> str:
         return f"Task#{self.no} started at time {self.start_time} is from {self.owner.station.name} connected to" \
                f" {self.owner.station.wintfs[0].associatedTo}"
 
-    def calculate_delay(self):
-        self.delay = self.end_time - self.deadline
-        logging.info(f"Delay on Task#{self.no} is {self.delay}")
-        return self.delay
+    def calculate_penalty(self):
+        self.penalty = self.end_time - self.deadline
+        logging.info(f"Penalty on Task#{self.no} is {self.penalty}")
+        return self.penalty
 
-    def get_prioritized_delay(self):
-        return self.priority * self.delay
+    def get_prioritized_penalty(self):
+        return self.priority * self.penalty
 
-    def get_predicted_prioritized_delay(self, possible_end_time):
-        delay = possible_end_time - self.deadline
-        return self.priority * max(delay, 0)
+    def get_predicted_prioritized_penalty(self, possible_end_time):
+        penalty = possible_end_time - self.deadline
+        return self.priority * max(penalty, 0)
 
-    def get_predicted_delay_score(self, possible_end_time):
-        delay = possible_end_time - self.deadline
-        if delay < 0:
-            score = delay / self.priority
+    def get_predicted_penalty_score(self, possible_end_time):
+        penalty = possible_end_time - self.deadline
+        if penalty < 0:
+            score = penalty / self.priority
         else:
-            score = delay * self.priority
+            score = penalty * self.priority
         return score
 
     def get_task_time(self):
@@ -116,7 +118,7 @@ class Task:
         self.process_start_time = current_time
         self.process_end_time = current_time + process_duration
         self.end_time = self.process_end_time
-        self.calculate_delay()
+        self.calculate_penalty()
         new_event = Event(EventType.PROCESS_COMPLETE, self, self.end_time)
         EventManager.add_event(self.end_time, new_event)
 
@@ -164,7 +166,7 @@ class TaskResult:
     end_time = None
     priority = None
     deadline = None
-    delay = None
+    penalty = None
     size = None
     owner = None
     assigned_processor = None
@@ -175,6 +177,7 @@ class TaskResult:
     processor_queue_arrival_time = None
     process_start_time = None
     process_end_time = None
+    owner_departure_time = None
 
     is_assigned_to_cloud = None
     is_waited_in_general_queue = None
@@ -188,7 +191,7 @@ class TaskResult:
         self.end_time = task.end_time
         self.priority = task.priority
         self.deadline = task.deadline
-        self.delay = task.delay
+        self.penalty = task.penalty
         self.size = task.size
         self.owner = f"{task.owner.sumo_id}({task.owner.station.name})"
         if task.assigned_processor:
@@ -199,6 +202,7 @@ class TaskResult:
         self.processor_queue_arrival_time = task.processor_queue_arrival_time
         self.process_start_time = task.process_start_time
         self.process_end_time = task.process_end_time
+        self.owner_departure_time = task.owner_departure_time
         self.estimated_tx_end_time = task.estimated_tx_end_time
         self.is_assigned_to_cloud = task.is_assigned_to_cloud
         self.is_waited_in_general_queue = task.is_waited_in_general_queue
@@ -209,9 +213,12 @@ class TaskResult:
     def get_timeline(self):
         timeline = f"Start:{self.start_time} -> "
         if not self.is_assigned_to_cloud and {self.tx_start_time}:
-            timeline += f"Pool_leave:{self.tx_start_time} -> "
+            timeline += f"PoolLeave:{self.tx_start_time} -> "
         if self.status in [Status.TX_CLOUD, Status.TX_PROCESSOR]:
-            return f"{timeline} Estimated tx: {self.estimated_tx_end_time:.0f}"
+            return f"{timeline}EstimatedTx: {self.estimated_tx_end_time:.0f}"
+        elif self.status == Status.OWNER_LEFT:
+            timeline += f"OwnerLeft: {self.owner_departure_time}"
+            return timeline
         elif not self.tx_end_time:
             return timeline
         if self.estimated_tx_end_time:
@@ -222,7 +229,7 @@ class TaskResult:
             estimated_tx_end_time = ""
         timeline += f"Tx_end:{self.tx_end_time:.0f}{estimated_tx_end_time} -> "
         if not self.is_assigned_to_cloud:
-            timeline += f"Queue_leave:{self.process_start_time} -> "
+            timeline += f"QueueLeave:{self.process_start_time} -> "
         end_time = f"End:{self.end_time:.0f}" if self.end_time else ""
         timeline += end_time
         return timeline
@@ -231,9 +238,9 @@ class TaskResult:
         processor = f"{Color.BLUE}cloud{Color.ENDC}" if self.is_assigned_to_cloud else self.assigned_processor
 
         if self.status in [Status.COMPLETED, Status.PROCESSING]:
-            delay = f"Delay:{self.delay:.1f} Prioritized delay: {self.priority * self.delay:.1f}"
+            penalty = f"Penalty:{self.penalty:.1f} Prioritized penalty: {self.priority * self.penalty:.1f}"
         else:
-            delay = ""
+            penalty = ""
 
         status = self.status.name
         if self.status == Status.COMPLETED:
@@ -242,4 +249,4 @@ class TaskResult:
             status = f"{Color.RED}{status}{Color.ENDC}"
 
         return f"Task#{self.no} \t{status} \t{self.owner}->{processor} \t {self.get_timeline()} \t" \
-               f"{delay}"
+               f"{penalty}"

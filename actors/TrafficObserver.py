@@ -31,7 +31,7 @@ class TrafficObserver:
 
     @staticmethod
     def decrement_traffic_on_cloud():
-        TrafficObserver.cloud_load += 1
+        TrafficObserver.cloud_load -= 1
         logging.info("Cloud traffic decreased to %d" % TrafficObserver.cloud_load)
 
     @staticmethod

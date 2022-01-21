@@ -27,9 +27,12 @@ def get_vehicle_data(code):
     return s.VEHICLE_TYPE_PROPERTIES.get(code)
 
 
-def select_vehicle_class():
-    lucky_category_symbol = random.choice(s.VEHICLE_CATEGORY_DISTRIBUTION)
-    return get_vehicle_data(lucky_category_symbol)
+def select_vehicle_class(vehicle_id=None, vehicle_records=None):
+    if vehicle_records:
+        category_symbol = vehicle_records[vehicle_id].type_abbreviation
+    else:
+        category_symbol = random.choice(s.VEHICLE_CATEGORY_DISTRIBUTION)
+    return get_vehicle_data(category_symbol)
 
 
 def remove_vehicle_prefix(name):
@@ -48,8 +51,9 @@ class SumoManager(object):
     car_duration = {}
     vehicles_being_served = []
     vehicles_not_being_served = []
+    vehicle_records = None
 
-    def __init__(self):
+    def __init__(self, vehicle_records=None):
         sumo_cmd = [s.SUMO_BINARY, "-c", s.SUMO_CFG_PATH, "-d", str(s.SUMO_DELAY), "--time-to-teleport", "-1"]
         if not s.USE_RANDOM_SUMO_SEED:
             sumo_cmd.extend(["--seed", str(s.SUMO_SEED_TO_USE)])
@@ -57,6 +61,9 @@ class SumoManager(object):
         if s.START_SIMULATION_DIRECTLY:
             sumo_cmd.append("-S")
         traci.start(sumo_cmd)
+
+        if vehicle_records:
+            self.vehicle_records = vehicle_records
         logging.info("Sumo Manager is initialized.")
 
     def __del__(self):
@@ -65,7 +72,7 @@ class SumoManager(object):
 
     def prepare_car(self, vehicle_id):
         if len(self.vehicles_being_served) < s.NUMBER_OF_STATIONS:
-            new_vehicle_class = select_vehicle_class()
+            new_vehicle_class = select_vehicle_class(vehicle_id=vehicle_id, vehicle_records=self.vehicle_records)
         else:
             logging.warning("Skipped car selection due to overload, assigning private")
             new_vehicle_class = get_vehicle_data("P")

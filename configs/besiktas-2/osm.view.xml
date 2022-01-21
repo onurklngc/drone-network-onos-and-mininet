@@ -1,8 +1,5 @@
 <viewsettings>
     <scheme name="custom_3">
-        <vType id="emergency">
-            <param key="color" value="20"/>
-        </vType>
         <opengl dither="0" fps="0" drawBoundaries="0" forceDrawPositionSelection="0" forceDrawRectangleSelection="0"/>
         <background backgroundColor="0,128,128" showGrid="0" gridXSize="100.00" gridYSize="100.00"/>
         <edges laneEdgeMode="0" scaleMode="0" laneShowBorders="1" showBikeMarkings="1" showLinkDecals="1" realisticLinkRules="0" showLinkRules="1" showRails="1" hideConnectors="1" widthExaggeration="1.00" minSize="0.00" showDirection="0" showSublanes="0" spreadSuperposed="0" edgeParam="EDGE_KEY" laneParam="LANE_KEY" vehicleParam="PARAM_NUMERICAL" vehicleTextParam="mn-data" edgeData="speed" edgeValueHideCheck="0" edgeValueHideThreshold="0.00"
@@ -466,7 +463,7 @@
                 <entry color="204,204,204" threshold="0.00"/>
             </colorScheme>
             <colorScheme name="meso:by edgeData (numerical, streetwise)" interpolated="1">
-                <entry color="204,204,204" name="missing data"/>
+                <entry color="204,204,204"/>
             </colorScheme>
             <scalingScheme name="uniform">
                 <entry color="1.00"/>
@@ -503,7 +500,7 @@
             </scalingScheme>
         </edges>
         <vehicles vehicleMode="0" vehicleQuality="2" vehicle_minSize="0.00" vehicle_exaggeration="1.00" vehicle_constantSize="1" vehicle_constantSizeSelected="1" showBlinker="1" drawMinGap="0" drawBrakeGap="0" showBTRange="0" showRouteIndex="0" scaleLength="1"
-                  vehicleName_show="1" vehicleName_size="40.00" vehicleName_color="204,153,0" vehicleName_bgColor="128,0,0,0" vehicleName_constantSize="1"
+                  vehicleName_show="1" vehicleName_size="32.00" vehicleName_color="204,153,0" vehicleName_bgColor="128,0,0,0" vehicleName_constantSize="1"
                   vehicleValue_show="0" vehicleValue_size="80.00" vehicleValue_color="cyan" vehicleValue_bgColor="128,0,0,0" vehicleValue_constantSize="1"
                   vehicleText_show="1" vehicleText_size="80.00" vehicleText_color="green" vehicleText_bgColor="128,0,0,0" vehicleText_constantSize="1">
             <colorScheme name="given vehicle/type/route color">

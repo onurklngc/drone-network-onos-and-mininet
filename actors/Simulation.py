@@ -31,6 +31,7 @@ class Simulation:
     record_file_name = f"records/record_{real_life_start_time}.pickle"
     cloud_iperf_process = None
     record = None
+    old_record = None
 
     @staticmethod
     def set_task_assigner(host):

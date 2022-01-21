@@ -42,10 +42,10 @@ def disassociate_sumo_vehicles_leaving_area(leaving_vehicle_id_list, vehicle_to_
         sta_to_be_disassociated = vehicle_to_mn_sta.pop(vehicle_sumo_id, None)
         sta_to_be_disassociated.is_used = False
         sta_to_be_disassociated.sumo_id = None
-        sta_to_be_disassociated.setPosition(s.UNASSOCIATED_CAR_LOCATION)
         unassociated_mn_stations.append(sta_to_be_disassociated)
         set_vehicle_as_left(vehicle_sumo_id)
         Simulation.record.vehicles[vehicle_sumo_id].departure_time = Simulation.current_time
+        sta_to_be_disassociated.setPosition(s.UNASSOCIATED_CAR_LOCATION)
         logging.info("Disassociated vehicle %s from mn car %s", vehicle_sumo_id, sta_to_be_disassociated.name)
 
 

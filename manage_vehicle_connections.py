@@ -7,6 +7,7 @@ from actors.Vehicle import ProcessorVehicle, ConnectionStatus
 
 def add_to_connecting_vehicles(vehicle):
     Simulation.connecting_vehicles[vehicle.sumo_id] = vehicle
+    vehicle.connection_status = ConnectionStatus.CONNECTING
     Simulation.all_vehicles[vehicle.sumo_id] = vehicle
     logging.info(f"Processor vehicle is setting up to network connection: {vehicle.sumo_id}")
 

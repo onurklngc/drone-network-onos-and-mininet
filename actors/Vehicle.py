@@ -22,7 +22,6 @@ class Vehicle(object):
     arrival_time = None
     departure_time = None
     task_list = None
-    associated_ap = None
     is_leaving_soon = None
 
     def __init__(self, sumo_vehicle, station, arrival_time):
@@ -37,8 +36,9 @@ class Vehicle(object):
         self.task_list = []
         self.is_leaving_soon = False
 
-    def __str__(self) -> str:
-        return self.sumo_id
+    def __repr__(self):
+        station_name = self.station.name if self.station else ""
+        return f"{self.sumo_id}({station_name})"
 
     def add_task(self, task):
         self.task_list.append(task)
@@ -150,9 +150,6 @@ class TaskGeneratorVehicle(Vehicle):
     def get_number_of_pool_and_tx_tasks(self):
         total = 0
         for task in self.task_list:
-            if task.status in [Status.TX_CLOUD, Status.TX_PROCESSOR, Status.ON_POOL]:
+            if task.status in [Status.TX_CLOUD, Status.TX_PROCESSOR, Status.ON_POOL, Status.GENERATED]:
                 total += 1
         return total
-
-
-

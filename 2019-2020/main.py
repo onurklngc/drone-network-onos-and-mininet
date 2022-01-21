@@ -38,7 +38,7 @@ intent_manager = None
 processes = []
 link_options_host2switch = dict(bw=54 / DATA_SCALING, delay='100us', loss=0.01, max_queue_size=1000, use_htb=True)
 link_options_switch2switch = dict(bw=100 / DATA_SCALING, delay='100us', loss=0.01, max_queue_size=1000, use_htb=True)
-# linkOptionsMediaServer2Switch = dict(bw=100, delay='0ms', loss=0.01, max_queue_size=100000, use_htb=True)
+# linkOptionsMediaServer2Switch = dict(bw=100, penalty='0ms', loss=0.01, max_queue_size=100000, use_htb=True)
 link_options_switch_dummy_host2switch = dict(bw=1000 / DATA_SCALING, delay='0', loss=0, max_queue_size=1000,
                                              use_htb=True)
 listen_host_availability_thread = None

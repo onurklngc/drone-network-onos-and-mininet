@@ -1,14 +1,15 @@
 import glob
 import logging
 import os
-import pickle
 import time
 
 from tabulate import tabulate
 
+import settings as s
 from actors.Simulation import Simulation
 from actors.Task import Status
 from actors.constant import Color
+from utils import read_pickle_file
 
 RESULT_FILENAME = ""
 SWITCH_TO_LATEST_SIMULATION = True
@@ -32,35 +33,45 @@ def create_simulation_results_data():
 
 def get_simulation_results(filename=RESULT_FILENAME):
     try:
-        with open(filename, 'rb') as handle:
-            return pickle.load(handle)
+        return read_pickle_file(filename)
     except (EOFError, FileNotFoundError) as e:
         logging.error("Couldn't get simulation results from file. %s", e)
         return {}
 
 
-def print_results(sim_results):
-    headers = ["Task No", "Status", "Owner-Processor", "Timeline", "Delay"]
+def print_results(result_file_name, sim_results):
+    total_weighted_penalty = 0
+    headers = ["Task No", "Status", "Owner-Processor", "Timeline", "Deadline", "Penalty", "Priority",
+               "Weighted Penalty"]
     rows = []
-    settings_to_print = f'Time:{sim_results["current_time"]}\tMethod:{sim_results["settings"]["ASSIGNMENT_METHOD"]}\t' \
+    settings_to_print = f'Name:{result_file_name}\tTime:{sim_results["current_time"]}\t' \
+                        f'Method:{sim_results["settings"]["ASSIGNMENT_METHOD"]}\t' \
                         f'Task Interval:{sim_results["settings"]["TASK_GENERATION_INTERVAL"]}'
     for task in sim_results["tasks"]:
         if task.status in [Status.COMPLETED, Status.PROCESSING]:
-            delay = f"Delay:{task.delay:.1f} Prioritized delay: {task.priority * task.delay:.1f}"
+            penalty = f"{task.penalty:.1f}"
+        elif task.status == Status.OWNER_LEFT:
+            task.penalty = task.owner_departure_time - task.deadline + s.TASK_FAILURE_PENALTY_OFFSET
+            penalty = f"{task.penalty:.1f}"
         else:
-            delay = ""
+            penalty = ""
         status = task.status.name
         if task.status == Status.COMPLETED:
             status = f"{Color.GREEN}{status}{Color.ENDC}"
         elif task.status in [Status.OWNER_LEFT, Status.PROCESSOR_LEFT]:
             status = f"{Color.RED}{status}{Color.ENDC}"
         processor = f"{Color.BLUE}cloud{Color.ENDC}" if task.is_assigned_to_cloud else task.assigned_processor
-
-        rows.append([f"{task.no}", status, f"{task.owner}->{processor}", task.get_timeline(), delay])
-
+        if task.penalty:
+            weighted_priority = max(0, task.penalty * task.priority)
+            total_weighted_penalty += weighted_priority
+            weighted_priority = f"{weighted_priority:.0f}"
+        else:
+            weighted_priority = ""
+        rows.append([f"{task.no}", status, f"{task.owner}->{processor}", task.get_timeline(), task.deadline, penalty,
+                     task.priority, weighted_priority])
     logging.info(f'{settings_to_print}\n'
                  f'{tabulate(rows, headers, tablefmt="pretty", stralign="left")}\n'
-                 f'{settings_to_print}')
+                 f'{settings_to_print}\t\t Total weighted penalty: {total_weighted_penalty:.1f}')
 
 
 def get_latest_simulation_file():
@@ -73,7 +84,7 @@ def tail_results(filename):
         if SWITCH_TO_LATEST_SIMULATION:
             filename = get_latest_simulation_file()
         sim_results = get_simulation_results(filename)
-        print_results(sim_results)
+        print_results(filename, sim_results)
         time.sleep(5)
 
 
@@ -84,6 +95,6 @@ if __name__ == '__main__':
     else:
         result_file_to_view = get_latest_simulation_file()
     results = get_simulation_results(result_file_to_view)
-    print_results(results)
+    print_results(result_file_to_view, results)
     input("Press Enter to continue...")
     tail_results(result_file_to_view)

@@ -34,7 +34,11 @@ def randomly_move_drones(net):
 def update_drone_locations_on_mn(drone_mover):
     drone_positions = drone_mover.get_drone_positions()
     for drone_id, ap in drone_aps.items():
-        ap_location = drone_positions[drone_id]
+        if s.USE_RECORD:
+            ap_moment = Simulation.old_record.aps[ap.name].get_moment(Simulation.current_time)
+            ap_location = [ap_moment.x, ap_moment.y, ap_moment.z]
+        else:
+            ap_location = drone_positions[drone_id]
         ap.setPosition(",".join(format(p, "10.3f") for p in ap_location))
 
 
@@ -47,8 +51,10 @@ def update_station_locations_on_mn(vehicle_data_list):
         vehicle_moment = VehicleMoment(vehicle_sumo_id, Simulation.current_time, vehicle_position_xyz[0],
                                        vehicle_position_xyz[1])
         if mn_sta.wintfs[0].associatedTo:
-            vehicle_moment.set_associated_ap(mn_sta.wintfs[0].associatedTo.node.name)
+            vehicle_moment.set_associated_ap(mn_sta.wintfs[0].associatedTo.node.name, mn_sta.wintfs[0].rssi)
         Simulation.record.vehicles[vehicle_sumo_id].add_moment(vehicle_moment)
+        Simulation.record.vehicles[vehicle_sumo_id].update_moment_connection_status(
+            Simulation.current_time - 1, Simulation.all_vehicles[vehicle_sumo_id].connection_status)  # Previous step
 
 
 def add_ap_ap_links(net, drone_ap_by_id, drone_mover, link_manager):
@@ -183,7 +189,7 @@ def create_topology(drone_mover):
 
     if s.ADD_DRONE_MN_HOST:
         for drone_id, host in drone_hosts.items():
-            new_net.addLink(host, drone_aps[drone_id], bw=100, delay='0ms')
+            new_net.addLink(host, drone_aps[drone_id], bw=100, delay='72ms')
 
     info("*** Starting network\n")
     if s.PLOT_MININET_GRAPH:

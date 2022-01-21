@@ -5,6 +5,7 @@ import numpy as np
 
 import settings as s
 from actors.Task import Task
+from actors.Vehicle import ConnectionStatus
 
 
 class TaskGenerator(object):
@@ -12,17 +13,23 @@ class TaskGenerator(object):
     completed_tasks = None
     task_timeline = None
     next_task_id = 0
+    generate_from_record = False
 
-    def __init__(self, timeline=None):
+    def __init__(self, task_records=None):
         self.available_task_generators = {}
         self.pool = []
         self.completed_tasks = []
         self.task_timeline = []
         self.next_task_id = 0
-        if not timeline:
+        if not task_records:
             self.generate_task_timeline()
         else:
-            self.task_timeline = timeline
+            task_times = []
+            for task in task_records:
+                task_times.append(task.start_time)
+            self.task_timeline = task_times
+            self.generate_from_record = True
+            self.task_records = task_records
         self.number_of_tasks = len(self.task_timeline)
 
     def add_to_available_task_generators(self, vehicle):
@@ -47,41 +54,48 @@ class TaskGenerator(object):
     def select_generator(self):
         idle_generators = []
         for generator in self.available_task_generators.values():
-            if generator.station.wintfs[0].associatedTo and not generator.is_leaving_soon:
+            if generator.connection_status == ConnectionStatus.CONNECTED and not generator.is_leaving_soon:
                 number_of_active_tasks = generator.get_number_of_pool_and_tx_tasks()
-                for i in range(s.GENERATOR_ACTIVE_TASKS_MAX-number_of_active_tasks):
+                for i in range(s.GENERATOR_ACTIVE_TASKS_MAX - number_of_active_tasks):
                     idle_generators.append(generator)
         if idle_generators:
+            logging.info(f"Selecting generator from: {idle_generators}")
             return random.choice(idle_generators)
+        else:
+            logging.error(
+                f"No idle generator available currently, busy ones: {self.available_task_generators.values()}")
         return None
 
-    def generate_new_tasks(self, current_time, generator_id=None, new_tasks=None):
+    def generate_new_tasks(self, current_time, new_tasks=None):
         if new_tasks is None:
             new_tasks = []
         if self.next_task_id == self.number_of_tasks:
             return new_tasks
-
         start_time = self.task_timeline[self.next_task_id]
 
-        if start_time == current_time:
+        if start_time <= current_time:
             logging.info("Creating task at time %d", current_time)
             self.next_task_id += 1
             if not self.available_task_generators:
                 logging.error("No task generator vehicle available at time %d", current_time)
                 return new_tasks
-            if generator_id:
-                selected_generator = None  # TODO
+            if self.generate_from_record:
+                task_record = self.task_records[self.next_task_id - 1]
+                selected_generator = self.available_task_generators[task_record.owner_sumo_id]
+                size = task_record.size
+                deadline = task_record.deadline
             else:
                 selected_generator = self.select_generator()
+                size = random.randint(*s.TASK_SIZE)
+                deadline = current_time + random.randint(*s.DEADLINE)
             if not selected_generator:
                 logging.error("No connected generator vehicle available at time %d", current_time)
                 return new_tasks
-            size = random.randint(*s.TASK_SIZE)
-            deadline = current_time + random.randint(*s.DEADLINE)
+
             task = Task(start_time, selected_generator, size, deadline)
             selected_generator.add_task(task)
             new_tasks.append(task)
-            return self.generate_new_tasks(current_time, generator_id, new_tasks)
+            return self.generate_new_tasks(current_time, new_tasks)
         else:
             logging.debug("No task at time %d", current_time)
             return new_tasks

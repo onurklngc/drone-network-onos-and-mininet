@@ -9,7 +9,7 @@ from actors.EventManager import EventManager, EventType
 from actors.Simulation import Simulation
 from actors.Task import Task, Status
 from actors.TrafficObserver import TrafficObserver
-from actors.Vehicle import TaskGeneratorVehicle, ProcessorVehicle
+from actors.Vehicle import TaskGeneratorVehicle, ProcessorVehicle, ConnectionStatus
 from actors.constant import Color
 from dispatch_tasks import send_task_data_to_cloud, send_task_data_to_processor
 from sumo_traci import SumoVehicle
@@ -19,14 +19,18 @@ from utils import get_estimated_tx_time_between_stations, get_estimated_tx_time_
 class TaskProcessorMatching:
     task = None
     processor = None
-    task_delay_score = None
+    task_penalty_score = None
     estimated_tx_time = None
 
-    def __init__(self, task, processor, task_delay_score, estimated_tx_time):
+    def __init__(self, task, processor, task_penalty_score, estimated_tx_time):
         self.task = task
         self.processor = processor
-        self.task_delay_score = task_delay_score
+        self.task_penalty_score = task_penalty_score
         self.estimated_tx_time = estimated_tx_time
+
+    def __repr__(self) -> str:
+        return f"Task#{self.task.no}: owner:{self.task.owner} candidateProcessor:{self.processor} " \
+               f"penalty:{self.task_penalty_score} estimatedTx:{self.estimated_tx_time:.0f}"
 
 
 class TaskOrganizer:
@@ -80,12 +84,12 @@ class TaskOrganizer:
                     logging.info(f"{Color.ORANGE}Task#{task_no} was {task.status.name}. Skipping...{Color.ENDC}")
                     continue
                 destination = "Cloud" if task.is_assigned_to_cloud else task.assigned_processor.station.name
-                logging.info(f"{Color.ORANGE}Task#{task_no} data is transferred: "
+                logging.info(f"{Color.ORANGE}Task#{task_no} data transferr output: "
                              f"{task.owner.station.name}->{destination}{Color.ENDC}")
                 out, err = process.communicate()
                 if err:
                     logging.info(
-                        f"Err for Task#{task.no}: {err}")
+                        f"Err for Task#{task.no}: {err.decode()}")
                     if task.is_assigned_to_cloud:
                         Simulation.cloud_server.popen("ping -c 3 %s" % task.owner.station.wintfs[0].ip)
                     else:
@@ -94,34 +98,41 @@ class TaskOrganizer:
                     self.download_processes[task_no] = subprocess.Popen(process.args, **defaults)
                     continue
                 task_identifier = task.get_task_identifier()
-                logging.info(f"Upload data report({task_identifier}):\n{out.decode}")
+                logging.info(f"Upload data report({task_identifier}):\n{out.decode()}")
                 Simulation.upload_reports[task_identifier] = out
                 task.server_process.kill()
                 task.server_process.wait()
+                for ping_process in task.ping_processes:
+                    ping_process.kill()
+                    ping_process.wait()
                 task.set_tx_complete(current_time)
 
     def get_next_task_pair(self, current_time, processors):
         task_scores = []
         for task in self.pool:
-            if task.owner.station.wintfs[0].associatedTo is None:
-                logging.error(f"Task#{task.no} owner {task.owner.station.name} is disconnected")
+            if task.owner.connection_status != ConnectionStatus.CONNECTED:
+                logging.error(f"Task#{task.no} owner {task.owner.station.name} is {task.owner.connection_status.name}. "
+                              f"Skipping...")
                 continue
             best_matching_for_task = None
             for processor in processors:
                 if task.size > processor.remaining_queue_size:
                     continue
-                tx_time = get_estimated_tx_time_between_stations(current_time, processor.station, task.owner.station,
+                tx_time = get_estimated_tx_time_between_stations(current_time, task.owner.station, processor.station,
                                                                  task)
+                if tx_time > s.ALLOWED_MAX_TX_TIME:
+                    continue
                 earliest_time_to_process_task = processor.estimated_earliest_time_to_process_new_task
                 processing_time = task.get_process_time(processor.process_speed)
                 estimated_task_end_time = max(current_time + tx_time, earliest_time_to_process_task) + processing_time
-                task_delay_score = task.get_predicted_delay_score(estimated_task_end_time)
-                if best_matching_for_task and best_matching_for_task.task_delay_score < task_delay_score:
+                task_penalty_score = task.get_predicted_penalty_score(estimated_task_end_time)
+                if best_matching_for_task and best_matching_for_task.task_penalty_score < task_penalty_score:
                     continue
-                best_matching_for_task = TaskProcessorMatching(task, processor, task_delay_score, tx_time)
+                best_matching_for_task = TaskProcessorMatching(task, processor, task_penalty_score, tx_time)
                 task_scores.append(best_matching_for_task)
         if task_scores:
-            pair = max(task_scores, key=attrgetter('task_delay_score'))
+            logging.info(f"Candidate pairs: {task_scores}")
+            pair = max(task_scores, key=attrgetter('task_penalty_score'))
             return pair
         else:
             return False
@@ -142,13 +153,12 @@ class TaskOrganizer:
                     break
             if not has_download_job:
                 processors_with_no_active_download_operation.append(processor)
+                logging.debug(f"Processor{processor} queue: {processor.queue}")
         new_matching = self.get_next_task_pair(current_time, processors_with_no_active_download_operation)
         while new_matching:
             processors_with_no_active_download_operation.remove(new_matching.processor)
             self.assign_task_to_processor(current_time, new_matching)
             new_matching = self.get_next_task_pair(current_time, processors_with_no_active_download_operation)
-
-        new_matching = self.get_next_task_pair(current_time, processors)
         if new_matching:
             self.assign_task_to_processor(current_time, new_matching)
             return self.aggressive_assignment(current_time, processors)
@@ -156,8 +166,9 @@ class TaskOrganizer:
     def handle_tasks(self, current_time):
         self.check_events(current_time)
         self.check_download_processes(current_time)
-        processors_not_leaving_soon = [processor for processor in
-                                       self.available_task_processors.values() if not processor.is_leaving_soon]
+        processors_not_leaving_soon = [processor for processor in self.available_task_processors.values() if
+                                       not processor.is_leaving_soon and
+                                       processor.connection_status == ConnectionStatus.CONNECTED]
         if s.ASSIGNMENT_METHOD == "AGGRESSIVE":
             self.aggressive_assignment(current_time, processors_not_leaving_soon)
         elif s.ASSIGNMENT_METHOD == "ADAPTIVE":
@@ -219,10 +230,7 @@ class TaskOrganizer:
                 iperf_server_process.kill()
                 iperf_server_process.wait()
         for task in vehicle.task_list:
-            if task in self.pool:
-                self.pool.remove(task)
-                continue
-            if task.status not in [Status.TX_CLOUD, Status.TX_PROCESSOR]:
+            if task.status not in [Status.TX_CLOUD, Status.TX_PROCESSOR, Status.ON_POOL]:
                 continue
             if is_processor:
                 task.status = Status.PROCESSOR_LEFT
@@ -235,9 +243,12 @@ class TaskOrganizer:
                 TrafficObserver.decrement_traffic_on_sta(task.owner.station.name)
             else:
                 task.status = Status.OWNER_LEFT
+                task.owner_departure_time = Simulation.current_time
                 logging.error(
                     f"{Color.RED}Task#{task.no} owner {vehicle.station.name} is left the area.{Color.ENDC}")
-                if task.is_assigned_to_cloud:
+                if task in self.pool:
+                    self.pool.remove(task)
+                elif task.is_assigned_to_cloud:
                     TrafficObserver.decrement_traffic_on_cloud()
                 else:
                     task.assigned_processor.drop_task(Simulation.current_time, task)
@@ -247,6 +258,9 @@ class TaskOrganizer:
                 task.tx_process.wait()
                 task.server_process.kill()
                 task.server_process.wait()
+                for ping_process in task.ping_processes:
+                    ping_process.kill()
+                    ping_process.wait()
             if task.no in self.download_processes:
                 self.download_processes.pop(task.no)
 
