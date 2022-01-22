@@ -29,7 +29,10 @@ def get_vehicle_data(code):
 
 def select_vehicle_class(vehicle_id=None, vehicle_records=None):
     if vehicle_records:
-        category_symbol = vehicle_records[vehicle_id].type_abbreviation
+        if vehicle_id in vehicle_records:
+            category_symbol = vehicle_records[vehicle_id].type_abbreviation
+        else:
+            category_symbol = "P"
     else:
         category_symbol = random.choice(s.VEHICLE_CATEGORY_DISTRIBUTION)
     return get_vehicle_data(category_symbol)

@@ -4,6 +4,7 @@ import random
 import numpy as np
 
 import settings as s
+from actors.Simulation import Simulation
 from actors.Task import Task
 from actors.Vehicle import ConnectionStatus
 
@@ -25,7 +26,7 @@ class TaskGenerator(object):
             self.generate_task_timeline()
         else:
             task_times = []
-            for task in task_records:
+            for task in task_records.values():
                 task_times.append(task.start_time)
             self.task_timeline = task_times
             self.generate_from_record = True
@@ -81,7 +82,7 @@ class TaskGenerator(object):
                 return new_tasks
             if self.generate_from_record:
                 task_record = self.task_records[self.next_task_id - 1]
-                selected_generator = self.available_task_generators[task_record.owner_sumo_id]
+                selected_generator = Simulation.all_vehicles[task_record.owner_sumo_id]
                 size = task_record.size
                 deadline = task_record.deadline
             else:

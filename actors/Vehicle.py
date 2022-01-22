@@ -97,7 +97,7 @@ class ProcessorVehicle(Vehicle):
                     break
         return task_to_start
 
-    def start_task(self, current_time):
+    def start_to_process_task(self, current_time):
         if not self.currently_processed_task:
             task = self.get_next_waiting_task()
             if task is None:
@@ -113,7 +113,7 @@ class ProcessorVehicle(Vehicle):
         self.currently_processed_task = None
         self.estimate_all_tasks_processed_time(current_time)
         if len(self.queue) > 0:
-            self.start_task(current_time)
+            self.start_to_process_task(current_time)
 
     def estimate_all_tasks_processed_time(self, current_time):
         total_wait_time = 0
@@ -133,6 +133,7 @@ class ProcessorVehicle(Vehicle):
 
     def drop_task(self, current_time, task):
         if task in self.queue:
+            self.remaining_queue_size += task.size
             self.queue.remove(task)
             logging.info(f"Dropping Task#{task.no}")
         self.start_to_process_next_task(current_time)

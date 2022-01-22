@@ -1,5 +1,7 @@
 import collections
 
+import settings
+from TaskOrganizer import AssignmentMethod
 from sumo_traci import select_vehicle_class
 
 if __name__ == '__main__':

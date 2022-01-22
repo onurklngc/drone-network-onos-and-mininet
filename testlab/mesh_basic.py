@@ -37,8 +37,8 @@ def topology():
     sta5 = net.addStation('sta5', mac='00:00:00:00:00:15', antennaGain=ANTENNA_GAIN, position='851,52,0')
     ap3 = net.addAccessPoint('ap3', wlans=2, ssid='ssid3', antennaGain=ANTENNA_GAIN, position='700,10,100', channel=3,
                              protocols='OpenFlow13')
-    h1 = net.addHost('h%d' % 1, mac='00:00:00:00:00:' + hex(1).split('x')[-1].zfill(2))
-    h2 = net.addHost('h%d' % 2, mac='00:00:00:00:00:' + hex(2).split('x')[-1].zfill(2))
+    h1 = net.addHost('h%d' % 1, mac='10:00:00:00:00:' + hex(1).split('x')[-1].zfill(2))
+    h2 = net.addHost('h%d' % 2, mac='10:00:00:00:00:' + hex(2).split('x')[-1].zfill(2))
     if IS_REMOTE_CONTROLLER:
         c0 = net.addController(name='c0',
                                controller=RemoteController,
@@ -56,7 +56,7 @@ def topology():
     info("*** Associating Stations\n")
     # net.addLink(ap1, sta1, ht_cap='HT40+')
     # net.addLink(ap2, sta2, ht_cap='HT40+')
-    net.addLink(h1, ap1, bw=54, delay='70ms')
+    net.addLink(h1, ap1, bw=100, delay='100ms')
     net.addLink(h2, ap2, bw=100, delay='0ms')
     # net.addLink(ap1, ap2, bw=100, penalty='0ms')
     net.addLink(ap1, intf='ap1-wlan2', cls=mesh, ssid='mesh-ssid', mode=MESH_WIFI_MODE, channel=MESH_CHANNEL,

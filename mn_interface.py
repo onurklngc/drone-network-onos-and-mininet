@@ -95,7 +95,7 @@ def add_bs(net, bs_location, bs_id=s.BS_ID_OFFSET):
     bs = net.addAccessPoint('%s%d' % (s.BS_NAME_PREFIX, bs_id), wlans=2, ssid='ssid-bs',
                             mode="g", channel=10, protocols='OpenFlow13', antennaGain=s.ANTENNA_GAIN,
                             position="{},{},{}".format(*bs_location, s.BS_HEIGHT))
-    Simulation.bs_host = net.addHost('bs%d' % bs_id, mac='FF:00:00:00:00:00')
+    Simulation.bs_host = net.addHost('bs%d' % bs_id, mac='10:00:00:00:00:01')
     net.bs_map[bs_id] = bs
     return bs, Simulation.bs_host
 
@@ -103,11 +103,10 @@ def add_bs(net, bs_location, bs_id=s.BS_ID_OFFSET):
 def add_bs_links(net, bs, bs_host, ap, link_manager):
     global medium_id
     net.addLink(bs, intf='%s-wlan2' % bs.name, cls=mesh, ssid='mesh-bs',
-                mode="ac", channel=11, txpower=s.BS_MESH_TX_POWER)
+                channel=11, txpower=s.BS_MESH_TX_POWER)
     net.addLink(ap, intf='%s-wlan5' % ap.name, cls=mesh, ssid='mesh-bs',
-                channel=11,
-                txpower=s.DRONE_AP_TX_POWER)
-    net.addLink(bs_host, bs, bw=100, delay='0ms')
+                channel=11, txpower=s.BS_MESH_TX_POWER)
+    net.addLink(bs_host, bs, bw=100, delay=s.CLOUD_LINK_DELAY)
     link_manager.send_two_way_link_to_controller('%s-mp5' % ap.name, '%s-mp2' % bs.name)
     bs.setAntennaGain(s.BS_GROUND_ANTENNA_GAIN, intf='%s-wlan1' % bs.name)
     bs.setTxPower(s.BS_GROUND_TX_POWER, intf='%s-wlan1' % bs.name)
@@ -134,8 +133,12 @@ def create_topology(drone_mover):
         Simulation.drone_id_close_to_bs = s.DRONE_ID_CLOSE_TO_BS
     drone_mover.set_root_node_id(Simulation.drone_id_close_to_bs)
     drone_position_close_to_bs = drone_mover.initial_drone_positions[Simulation.drone_id_close_to_bs]
-    bs_location = pick_coordinate_close_to_given_location(drone_position_close_to_bs[0], drone_position_close_to_bs[1])
-
+    if s.BS_LOCATION_PRESET:
+        bs_location = (drone_position_close_to_bs[0] + s.BS_LOCATION_PRESET[0], drone_position_close_to_bs[1] +
+                       s.BS_LOCATION_PRESET[1])
+    else:
+        bs_location = pick_coordinate_close_to_given_location(drone_position_close_to_bs[0],
+                                                              drone_position_close_to_bs[1])
     for sta_id in range(s.NUMBER_OF_STATIONS):
         sta = new_net.addStation('sta%d' % (sta_id + 1), position=s.UNASSOCIATED_CAR_LOCATION,
                                  antennaGain=s.ANTENNA_GAIN,
@@ -189,7 +192,7 @@ def create_topology(drone_mover):
 
     if s.ADD_DRONE_MN_HOST:
         for drone_id, host in drone_hosts.items():
-            new_net.addLink(host, drone_aps[drone_id], bw=100, delay='72ms')
+            new_net.addLink(host, drone_aps[drone_id], bw=100, delay='0ms')
 
     info("*** Starting network\n")
     if s.PLOT_MININET_GRAPH:

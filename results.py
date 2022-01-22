@@ -31,7 +31,7 @@ def create_simulation_results_data():
     return results
 
 
-def get_simulation_results(filename=RESULT_FILENAME):
+def get_simulation_results(filename=RESULT_FILENAME.strip()):
     try:
         return read_pickle_file(filename)
     except (EOFError, FileNotFoundError) as e:
@@ -44,9 +44,6 @@ def print_results(result_file_name, sim_results):
     headers = ["Task No", "Status", "Owner-Processor", "Timeline", "Deadline", "Penalty", "Priority",
                "Weighted Penalty"]
     rows = []
-    settings_to_print = f'Name:{result_file_name}\tTime:{sim_results["current_time"]}\t' \
-                        f'Method:{sim_results["settings"]["ASSIGNMENT_METHOD"]}\t' \
-                        f'Task Interval:{sim_results["settings"]["TASK_GENERATION_INTERVAL"]}'
     for task in sim_results["tasks"]:
         if task.status in [Status.COMPLETED, Status.PROCESSING]:
             penalty = f"{task.penalty:.1f}"
@@ -69,9 +66,13 @@ def print_results(result_file_name, sim_results):
             weighted_priority = ""
         rows.append([f"{task.no}", status, f"{task.owner}->{processor}", task.get_timeline(), task.deadline, penalty,
                      task.priority, weighted_priority])
-    logging.info(f'{settings_to_print}\n'
+    settings_to_print = f'Name:{result_file_name}\tTime:{sim_results["current_time"]-1}\t' \
+                        f'Method:{sim_results["settings"]["ASSIGNMENT_METHOD"]}\t' \
+                        f'Task Interval:{sim_results["settings"]["TASK_GENERATION_INTERVAL"]}' \
+                        f'\t Number of tasks:{len(sim_results["tasks"])} \t Total weighted penalty: {total_weighted_penalty:.1f}'
+    logging.info(f'\n\n{settings_to_print}\n'
                  f'{tabulate(rows, headers, tablefmt="pretty", stralign="left")}\n'
-                 f'{settings_to_print}\t\t Total weighted penalty: {total_weighted_penalty:.1f}')
+                 f'{settings_to_print}\t\t Total weighted penalty: {total_weighted_penalty:.0f}')
 
 
 def get_latest_simulation_file():
@@ -91,7 +92,7 @@ def tail_results(filename):
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, "INFO"), format="%(asctime)s %(levelname)s -> %(message)s")
     if RESULT_FILENAME:
-        result_file_to_view = RESULT_FILENAME
+        result_file_to_view = RESULT_FILENAME.strip()
     else:
         result_file_to_view = get_latest_simulation_file()
     results = get_simulation_results(result_file_to_view)

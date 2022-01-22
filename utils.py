@@ -66,8 +66,9 @@ def get_station_bw(given_time, sta, are_sharing_same_interface=0):
 
 def get_cloud_bw():
     cloud_traffic_load = TrafficObserver.get_traffic_on_cloud_interface()
-    rssi_cloud = s.AP_AP_RSSI
-    cloud_data_rate = get_link_speed_by_rssi(rssi_cloud) / (cloud_traffic_load + 1)
+    # rssi_cloud = s.AP_AP_RSSI
+    # cloud_data_rate = get_link_speed_by_rssi(rssi_cloud) / (cloud_traffic_load + 1)
+    cloud_data_rate = 1000 / (cloud_traffic_load + 1)
     logging.info(f"Cloud data_rate={cloud_data_rate} (AP shared by {cloud_traffic_load + 1})")
     return cloud_data_rate
 
@@ -116,8 +117,10 @@ def get_simulation_record(filename):
     return read_pickle_file(filename)
 
 
+def get_solution(filename):
+    return read_pickle_file(filename.replace("record", "solution"))
+
 
 if __name__ == '__main__':
     record = get_simulation_record(s.RECORD_FILE)
     ap_records = record.aps
-

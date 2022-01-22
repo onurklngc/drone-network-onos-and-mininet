@@ -142,7 +142,7 @@ class Task:
             TrafficObserver.decrement_traffic_on_cloud()
         else:
             self.status = Status.WAITING_ON_QUEUE
-            self.assigned_processor.start_task(current_time)
+            self.assigned_processor.start_to_process_task(current_time)
             TrafficObserver.decrement_traffic_on_sta(self.assigned_processor.station.name)
 
     def set_estimated_tx_end_time(self, current_time, estimated_tx_time):

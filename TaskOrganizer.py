@@ -2,11 +2,14 @@ import bisect
 import logging
 import random
 import subprocess
+import sys
+from enum import Enum
 from operator import attrgetter
 
 import settings as s
 from actors.EventManager import EventManager, EventType
 from actors.Simulation import Simulation
+from actors.Solution import Action
 from actors.Task import Task, Status
 from actors.TrafficObserver import TrafficObserver
 from actors.Vehicle import TaskGeneratorVehicle, ProcessorVehicle, ConnectionStatus
@@ -14,6 +17,12 @@ from actors.constant import Color
 from dispatch_tasks import send_task_data_to_cloud, send_task_data_to_processor
 from sumo_traci import SumoVehicle
 from utils import get_estimated_tx_time_between_stations, get_estimated_tx_time_station_to_cloud
+
+
+class AssignmentMethod(Enum):
+    AGGRESSIVE = "AGGRESSIVE"
+    ADAPTIVE = "ADAPTIVE"
+    OPTIMUM = "OPTIMUM"
 
 
 class TaskProcessorMatching:
@@ -42,8 +51,9 @@ class TaskOrganizer:
     available_task_processors = {}
     download_processes = None
     traffic_count_on_ap = None
+    solution = None
 
-    def __init__(self):
+    def __init__(self, solution=None):
         self.available_task_processors = {}
         self.tasks_being_processed_on_cloud = []
         TaskOrganizer.cloud_thresholds = list(s.CLOUD_PROBABILITY_BY_POOL_SIZE.keys())
@@ -54,6 +64,7 @@ class TaskOrganizer:
         self.completed_tasks = []
         self.download_processes = {}
         self.traffic_count_on_ap = {}
+        self.solution = solution
 
     def check_events(self, current_time):
         events = EventManager.get_events_on_time_t(current_time)
@@ -69,10 +80,6 @@ class TaskOrganizer:
                     processor = event.task.assigned_processor
                     logging.info(f"Task#{event.task.no} process on processor {processor.sumo_id} is complete.")
                     processor.start_to_process_next_task(current_time)
-
-    @staticmethod
-    def calculate_delay(self, processor, task):
-        pass
 
     def check_download_processes(self, current_time):
         for task_no, process in self.download_processes.copy().items():
@@ -163,16 +170,48 @@ class TaskOrganizer:
             self.assign_task_to_processor(current_time, new_matching)
             return self.aggressive_assignment(current_time, processors)
 
+    def assignment_from_solution(self, current_time):
+        for task in self.pool.copy():
+            action = self.solution.decisions[task.no]
+            if action == Action.SKIP:
+                continue
+            if action.sumo_id in Simulation.all_vehicles:
+                processor = Simulation.all_vehicles[action.sumo_id]
+                if processor.departure_time:
+                    self.pool.remove(task)
+                    task.set_assignment_to_cloud(current_time)
+                    self.assign_to_cloud(current_time, task)
+                    continue
+                if task.size > processor.remaining_queue_size:
+                    logging.info(f"Processor queue size is not enough for task#{task.no}")
+                    continue
+                self.pool.remove(task)
+                estimated_tx_time = get_estimated_tx_time_between_stations(current_time, task.owner.station,
+                                                                           processor.station,
+                                                                           task)
+                task.set_estimated_tx_end_time(current_time, estimated_tx_time)
+                task.status = Status.TX_PROCESSOR
+                processor.assign_task(current_time, task)
+                download_process = send_task_data_to_processor(task, Simulation.nat_host_ip)
+                self.download_processes[task.no] = download_process
+                TrafficObserver.increment_traffic_on_sta(task.owner.station.name)
+                TrafficObserver.increment_traffic_on_sta(processor.station.name)
+
     def handle_tasks(self, current_time):
         self.check_events(current_time)
         self.check_download_processes(current_time)
         processors_not_leaving_soon = [processor for processor in self.available_task_processors.values() if
                                        not processor.is_leaving_soon and
                                        processor.connection_status == ConnectionStatus.CONNECTED]
-        if s.ASSIGNMENT_METHOD == "AGGRESSIVE":
+        if AssignmentMethod(s.ASSIGNMENT_METHOD) == AssignmentMethod.AGGRESSIVE:
             self.aggressive_assignment(current_time, processors_not_leaving_soon)
-        elif s.ASSIGNMENT_METHOD == "ADAPTIVE":
+        elif AssignmentMethod(s.ASSIGNMENT_METHOD) == AssignmentMethod.ADAPTIVE:
             self.adaptive_assignment(current_time, processors_not_leaving_soon)
+        elif AssignmentMethod(s.ASSIGNMENT_METHOD) == AssignmentMethod.OPTIMUM:
+            self.assignment_from_solution(current_time)
+        else:
+            logging.error("Wrong task assignment setting is set")
+            sys.exit(1)
 
     def add_task(self, current_time, task):
         self.active_tasks[task.no] = task
@@ -183,6 +222,11 @@ class TaskOrganizer:
         lottery = random.random()
         is_assigned_to_cloud = lottery < cloud_probability
 
+        if AssignmentMethod(s.ASSIGNMENT_METHOD) == AssignmentMethod.OPTIMUM:
+            if self.solution.decisions[task.no] == Action.CLOUD:
+                is_assigned_to_cloud = True
+            else:
+                is_assigned_to_cloud = False
         if is_assigned_to_cloud:
             task.set_assignment_to_cloud(current_time)
             self.assign_to_cloud(current_time, task)

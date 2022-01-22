@@ -12,7 +12,7 @@ from mn_wifi.cli import CLI
 import controller_utils
 import settings as s
 from TaskGenerator import TaskGenerator
-from TaskOrganizer import TaskOrganizer
+from TaskOrganizer import TaskOrganizer, AssignmentMethod
 from actors.Record import SimulationRecord
 from actors.Simulation import Simulation
 from clean import stop_children_processes
@@ -26,7 +26,8 @@ from results import create_simulation_results_data
 from sumo_interface import disassociate_sumo_vehicles_leaving_area, \
     associate_sumo_vehicles_with_mn_stations, update_drone_locations_on_sumo, add_aps_as_poi_to_sumo
 from sumo_traci import SumoManager
-from utils import get_wait_time, write_as_pickle, get_settings_to_simulation_object, get_simulation_record
+from utils import get_wait_time, write_as_pickle, get_settings_to_simulation_object, get_simulation_record, \
+    get_solution
 
 simulation_id = str(int(time.time() // 10))
 processes = []
@@ -109,11 +110,14 @@ if __name__ == '__main__':
     else:
         vehicle_records = None
         task_records = None
+    if AssignmentMethod(s.ASSIGNMENT_METHOD) == AssignmentMethod.OPTIMUM:
+        solution = get_solution(s.RECORD_FILE)
+    else:
+        solution = None
     Simulation.task_generator = TaskGenerator(task_records=task_records)
-    Simulation.task_organizer = TaskOrganizer()
+    Simulation.task_organizer = TaskOrganizer(solution=solution)
     current_drone_mover = DroneMover()
     drone_operator = DroneOperator(current_drone_mover)
-    Simulation.task_organizer = TaskOrganizer()
     net = create_topology(current_drone_mover)
     manager = SumoManager(vehicle_records=vehicle_records)
     add_aps_as_poi_to_sumo(net, manager)

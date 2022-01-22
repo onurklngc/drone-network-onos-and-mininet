@@ -1,15 +1,16 @@
 import itertools
 import logging
-from enum import Enum
 from math import ceil
 
 import numpy as np
+from tabulate import tabulate
 
 import settings as s
+from actors.Solution import Action, Solution
 from actors.Vehicle import ConnectionStatus
-from utils import read_pickle_file, get_link_speed_by_rssi, get_estimated_tx_time_station_to_cloud
+from utils import read_pickle_file, get_link_speed_by_rssi, write_as_pickle
 
-RECORD_FILE = "records/record_20220121-031650.pickle"
+RECORD_FILE = "records/record_20220121-072155.pickle"
 
 processor_records = {}
 generator_records = {}
@@ -17,31 +18,23 @@ ap_records = {}
 processors = {}
 generators = {}
 task_based_available_processors = {}
-TIME_WINDOW = 20
+TIME_WINDOW = 120
 record = None
-earliest_next_task_start_tx_time = {}
-traffics = {}
 CLOUD = 0
+earliest_next_task_start_tx_time = {CLOUD: 0}
+traffics = {}
 traffic_indices = {}
 vehicle_by_traffic_index = {}
 
 
-class Action(Enum):
-    CLOUD = 0
-    SKIP = 1
-
-    def __repr__(self):
-        return self.name
-
-
 def count_possible_pairs(task_processor_pairing):
     counter = 0
-    possibilities = 1
+    number_of_possibilities = 1
     for possible_processors in task_processor_pairing.values():
-        possibilities *= len(possible_processors) + 1
+        number_of_possibilities *= len(possible_processors) + 1
         counter += len(possible_processors)
-    logging.info(f"Number of possible pairings: {counter}, possibilities: {possibilities}")
-    return counter, possibilities
+    logging.debug(f"Number of possible pairings: {counter}, possibilities: {number_of_possibilities}")
+    return counter, number_of_possibilities
 
 
 def find_smallest_sublist_length(given_list, desired_sum):
@@ -98,9 +91,12 @@ def get_simulation_record(filename=RECORD_FILE):
         vehicle.bw = np.zeros(sim_record.sim_end_time + 2)
         if not vehicle.departure_time:
             vehicle.departure_time = sim_record.sim_end_time
+        vehicle.departure_time -= 5
         if not vehicle.no_new_task_start_time:
             vehicle.no_new_task_start_time = sim_record.sim_end_time
         for moment_time, moment in vehicle.moments.items():
+            if moment_time > vehicle.departure_time:
+                break
             if moment.rssi and moment.connection_status == ConnectionStatus.CONNECTED:
                 moment.bw = get_link_speed_by_rssi(moment.rssi)
                 vehicle.bw[moment_time] = moment.bw
@@ -117,7 +113,6 @@ def get_simulation_record(filename=RECORD_FILE):
         task_based_available_processors[task_no] = []
         owner = generator_records[task.owner_sumo_id]
         task.owner_object = owner
-        task_start_time = task.start_time
         owner_departure_time = owner.departure_time
         for processor in processor_records.values():
             owner_bw_for_task = owner.bw.copy()
@@ -130,15 +125,22 @@ def get_simulation_record(filename=RECORD_FILE):
                 tmp_pair_bw[time_slot] /= 2
             min_tx_time = find_smallest_sublist_length(tmp_pair_bw, task.size)
             # min_tx_time = task.size / owner.bw.max()
+            if task.start_time + 60 < processor.entry_time:
+                continue
             if owner_departure_time - min_tx_time > processor.entry_time:
-                if task_start_time >= processor.no_new_task_start_time:
+                if task.start_time >= processor.no_new_task_start_time:
                     continue
                 task_based_available_processors[task_no].append(processor)
-    count_possible_pairs(task_based_available_processors)
+    counter, number_of_possibilities = count_possible_pairs(task_based_available_processors)
+    logging.info(f"Global: Number of possible pairings: {counter}, possibilities: {number_of_possibilities}")
     return sim_record
 
 
-def get_estimated_tx_time_station_to_cloud(task_size, given_time, owner_object, temp_traffics):
+def get_estimated_tx_time_station_to_cloud(task_size, given_time, owner_object, temp_earliest_next_task_start_tx_time,
+                                           temp_traffics):
+    # given_time = max(temp_earliest_next_task_start_tx_time[CLOUD], given_time)
+    if owner_object.departure_time <= given_time:
+        return
     associated_ap = owner_object.get_moment(given_time).associated_ap
     if not associated_ap:
         return
@@ -151,16 +153,16 @@ def get_estimated_tx_time_station_to_cloud(task_size, given_time, owner_object, 
     if sta_side_tx_time is None:
         logging.debug("Skipping station_to_cloud")
         return
-
+    sta_side_tx_time += 3  # Connection delay
     load_on_cloud_on_time_t = temp_traffics[given_time][CLOUD] + 1
-    cloud_side_tx_time = task_size * load_on_cloud_on_time_t / 4360
-    tx_time = ceil(max(sta_side_tx_time, cloud_side_tx_time)) + 3
+    cloud_side_tx_time = task_size * load_on_cloud_on_time_t / 800
+    tx_time = ceil(max(sta_side_tx_time, cloud_side_tx_time)) + 5
     if tx_time + given_time > record.sim_end_time:
         return
 
     temp_traffics[given_time:tx_time + given_time][:, owner_object.index] += 1
     temp_traffics[given_time:tx_time + given_time][:, CLOUD] += 1
-
+    temp_earliest_next_task_start_tx_time[CLOUD] = tx_time + given_time
     logging.debug(f"Estimated tx time: {tx_time} to cloud")
     return tx_time
 
@@ -195,11 +197,11 @@ def get_estimated_tx_time_station_to_station(task_size, task_start_time, owner_o
     if tx_time is None:
         logging.debug("Skipping station_to_station")
         return
-
+    tx_time += 5  # connection delay
     temp_traffics[tx_start_time:tx_time + tx_start_time][:, owner_object.index] += 1
     temp_traffics[tx_start_time:tx_time + tx_start_time][:, processor_object.index] += 1
 
-    logging.debug(f"Estimated tx time: {tx_time} to cloud")
+    logging.debug(f"Estimated tx time: {tx_time} to station")
     return ceil(tx_time)
 
 
@@ -207,11 +209,13 @@ def evaluate_combination(best_total_prioritized_penalty, tasks_to_be_decided, co
     total_prioritized_penalty = 0
     temp_earliest_next_task_start_tx_time = earliest_next_task_start_tx_time.copy()
     temp_traffics = traffics.copy()
+    penalties_by_task = []
     for decision_index, task in enumerate(tasks_to_be_decided):
         owner_object = task.owner_object
         decision = combination[decision_index]
         if decision == Action.CLOUD:
             estimated_tx_time = get_estimated_tx_time_station_to_cloud(task.size, task.start_time, owner_object,
+                                                                       temp_earliest_next_task_start_tx_time,
                                                                        temp_traffics)
             if not estimated_tx_time or estimated_tx_time > s.ALLOWED_MAX_TX_TIME:
                 return decision_index
@@ -237,54 +241,127 @@ def evaluate_combination(best_total_prioritized_penalty, tasks_to_be_decided, co
                 f"best_total_prioritized_penalty({best_total_prioritized_penalty}) < "
                 f"current total_prioritized_penalty({total_prioritized_penalty})")
             return decision_index
-    return total_prioritized_penalty, temp_earliest_next_task_start_tx_time, temp_traffics
+        penalties_by_task.append(prioritized_penalty)
+    return total_prioritized_penalty, penalties_by_task, temp_earliest_next_task_start_tx_time, temp_traffics
 
 
-def optimize_time_window(sim_record, start, end):
+def optimize_time_window(decisions, start, end):
     num_of_combinations_tried = 0
-    decisions_in_the_given_time_window = {}
-    for task_no, task in sim_record.tasks.items():
-        if start <= task.start_time < end:
-            decisions_in_the_given_time_window[task_no] = [Action.CLOUD, Action.SKIP]
-            for processor in task_based_available_processors[task_no]:
-                if task.start_time < processor.no_new_task_start_time and processor.entry_time < end:
-                    decisions_in_the_given_time_window[task_no].append(processor)
-    decision_counter, possibilities = count_possible_pairs(decisions_in_the_given_time_window)
-
-    for given_time in range(sim_record.sim_start_time, start):
-        temp_decrease_traffic_events = traffics.copy()
-
-    tasks_to_be_decided = [record.tasks[task_no] for task_no in decisions_in_the_given_time_window.keys()]
+    num_of_combinations_skipped = 0
+    tasks_to_be_decided = [record.tasks[task_no] for task_no in decisions.keys()]
+    if not tasks_to_be_decided:
+        return [], 0, [], \
+               earliest_next_task_start_tx_time, traffics
     option_costs = []
     best_total_prioritized_penalty = 99999
-    best_combination = None
-    temp_earliest_next_task_start_tx_time = earliest_next_task_start_tx_time
-    temp_traffics = traffics
+    best_combination = []
+    best_scores_by_decision = []
+    temp_earliest_next_task_start_tx_time = earliest_next_task_start_tx_time  # To suppress ide warning
+    temp_traffics = traffics  # To suppress ide warning
     failed_part = []
-    logging.info(f"Tasks to be decided: {tasks_to_be_decided}")
-    for combination in itertools.product(*decisions_in_the_given_time_window.values()):
+    tasks_table = [[task] for task in tasks_to_be_decided]
+    logging.info(f"\n{tabulate(tasks_table, ['Tasks to be decided'])}")
+    for combination in itertools.product(*decisions.values()):
         if failed_part and combination[:len(failed_part)] == failed_part:
             logging.debug(f"Skipping this combination: {combination}")
+            num_of_combinations_skipped += 1
         combination_result = evaluate_combination(best_total_prioritized_penalty, tasks_to_be_decided, combination)
         if isinstance(combination_result, int):
-            failed_part = combination[:combination_result]
+            failed_part = combination[:combination_result + 1]
             continue
         num_of_combinations_tried += 1
-        option_cost, temp_earliest_next_task_start_tx_time, temp_traffics = combination_result
-        option_costs.append(option_cost)
-        if option_cost and option_cost < best_total_prioritized_penalty:
-            best_total_prioritized_penalty = option_cost
+        decision_set_cost, temp_scores, temp_earliest_next_task_start_tx_time, temp_traffics = combination_result
+        option_costs.append(decision_set_cost)
+        if decision_set_cost < best_total_prioritized_penalty:
+            best_total_prioritized_penalty = decision_set_cost
             best_combination = combination
+            best_scores_by_decision = temp_scores
     logging.info(option_costs)
-    logging.info(f"Best decision for ({start},{end}): {best_combination} with {best_total_prioritized_penalty} penalty "
-                 f"(combinationsTried:{num_of_combinations_tried})")
-    return best_combination, best_total_prioritized_penalty, temp_earliest_next_task_start_tx_time, temp_traffics
+    logging.info(
+        f"Best decision for ({start},{end}) has {best_total_prioritized_penalty:.0f} penalty "
+        f"(combinationsTried:{num_of_combinations_tried},"
+        f"num_of_combinations_skipped:{num_of_combinations_skipped})")
+    tasks_table = [[task, best_combination[task_index], best_scores_by_decision[task_index]] for task_index, task in
+                   enumerate(tasks_to_be_decided)]
+    logging.info(f"\n{tabulate(tasks_table, ['Task', 'Decision'], tablefmt='pretty', stralign='left')}")
+    return best_combination, best_total_prioritized_penalty, best_scores_by_decision, \
+           temp_earliest_next_task_start_tx_time, temp_traffics
+
+
+def save_to_solution_file(solution_to_save, filename):
+    write_as_pickle(solution_to_save, filename)
+
+
+def estimate_window_load(sim_record, start, end):
+    decisions_in_the_given_time_window = {}
+
+    for task_no, current_task in sim_record.tasks.items():
+        if start <= current_task.start_time < end:
+            decisions_in_the_given_time_window[task_no] = [Action.CLOUD, Action.SKIP]
+            # decisions_in_the_given_time_window[task_no] = []
+            for processor in task_based_available_processors[task_no]:
+                if current_task.start_time < processor.no_new_task_start_time and processor.entry_time < end:
+                    decisions_in_the_given_time_window[task_no].append(processor)
+    decision_counter, possibilities_in_window = count_possible_pairs(decisions_in_the_given_time_window)
+    return decisions_in_the_given_time_window, decision_counter, possibilities_in_window
+
+
+def get_decisions_for_given_time(given_time, decisions, corresponding_combinations_selected):
+    decisions_on_given_time = {}
+    for decision_index, task_no in enumerate(decisions.keys()):
+        start_time = record.tasks[task_no].start_time
+        if start_time == given_time:
+            decisions_on_given_time[task_no] = [corresponding_combinations_selected[decision_index]]
+    return decisions_on_given_time
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, "INFO"), format="%(asctime)s %(levelname)s -> %(message)s")
+    solution_filename = RECORD_FILE.replace("record", "solution")
     record = get_simulation_record()
-    for i in range(record.sim_start_time, record.sim_end_time, TIME_WINDOW):
-        selected_combination, score, earliest_next_task_start_tx_time, traffics = optimize_time_window(record, i,
-                                                                                                       i + TIME_WINDOW)
-    logging.info(record)
+    solution = []
+    scores = []
+    total_score = 0
+    number_of_tasks = len(record.tasks)
+    next_task_index = 0
+    while next_task_index < number_of_tasks:
+        window_start_time = record.tasks[next_task_index].start_time
+        window_end_time = window_start_time + TIME_WINDOW
+        logging.info(f"Window: {window_start_time}-{window_end_time} (size:{window_end_time - window_start_time})")
+        decisions_in_given_time_window, num_of_decisions, possibilities = \
+            estimate_window_load(record, window_start_time, window_end_time)
+        logging.info(f"Number of possible pairings: {num_of_decisions}, possibilities: {possibilities}")
+
+        is_shrunk_window = False
+        while possibilities > 1500000:
+            is_shrunk_window = True
+            window_end_time -= 1
+            decisions_in_given_time_window, num_of_decisions, possibilities = \
+                estimate_window_load(record, window_start_time, window_end_time)
+        if is_shrunk_window:
+            logging.info(f"Readjusting window: {window_start_time}-{window_end_time} "
+                         f"(size:{window_end_time - window_start_time})")
+            logging.info(f"Number of possible pairings: {num_of_decisions}, possibilities: {possibilities}")
+
+        window_result = optimize_time_window(decisions_in_given_time_window, window_start_time, window_end_time)
+        combinations_selected = window_result[0]
+        tasks_on_current_time = get_decisions_for_given_time(window_start_time, decisions_in_given_time_window,
+                                                             combinations_selected)
+        selected_combination, window_score, scores_by_decision, earliest_next_task_start_tx_time, traffics = \
+            optimize_time_window(tasks_on_current_time, window_start_time, window_end_time)
+
+        for decision_score in scores_by_decision:
+            if decision_score > 0:
+                total_score += decision_score
+        solution.extend(selected_combination)
+        scores.extend(scores_by_decision)
+        next_task_index = len(solution)
+    logging.info(f"Solution score for {len(solution)} tasks: {total_score}")
+    # solution_text = ""
+    headers = ["Task", "Action", "Score"]
+    rows = []
+    for current_task_no, current_task in record.tasks.items():
+        rows.append([current_task, solution[current_task_no], f"{scores[current_task_no]:.0f}"])
+    logging.info(f'Decisions: \n{tabulate(rows, headers, tablefmt="pretty", stralign="left")}')
+    solution_data = Solution(solution, total_score, scores)
+    save_to_solution_file(solution_data, solution_filename)
