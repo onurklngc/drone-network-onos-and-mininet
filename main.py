@@ -1,13 +1,14 @@
 #!/usr/bin/python
 
 """UAVs providing network to vehicles."""
+import argparse
 import logging
 import os
+import subprocess
 import time
 
 from mininet.log import setLogLevel
 from mininet.term import makeTerms
-from mn_wifi.cli import CLI
 
 import controller_utils
 import settings as s
@@ -95,10 +96,61 @@ def stop_servers():
             log_file.write(out)
 
 
+def parse_cli_arguments():
+    parser = argparse.ArgumentParser("Simulate network")
+    parser.add_argument('-m', '--mode', type=str,
+                        help="Assignment mode",
+                        default=s.ASSIGNMENT_METHOD)
+    parser.add_argument('-r', '--request-interval', type=int, help="Request interval in seconds",
+                        default=s.TASK_GENERATION_INTERVAL)
+    parser.add_argument('--seed-no', type=int, help="Randomness seed no", default=s.SUMO_SEED_TO_USE)
+    parser.add_argument('--wait-previous-queue', type=bool, help="Wait previous task to be processed",
+                        default=s.WAIT_PREVIOUS_TASK_TO_BE_PROCESSED, action=argparse.BooleanOptionalAction)
+    parser.add_argument("-l", "--log", dest="log_level", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                        help="Set the logging level", default=s.LOG_LEVEL)
+    parser.add_argument('--record-file', type=str, help="Record file to use to import tasks and vehicle assignments")
+    return parser.parse_args()
+
+
+def apply_arguments(arguments):
+    s.ASSIGNMENT_METHOD = arguments.mode.upper()
+    Simulation.settings['ASSIGNMENT_METHOD'] = s.ASSIGNMENT_METHOD
+    s.TASK_GENERATION_INTERVAL = arguments.request_interval
+    Simulation.settings['TASK_GENERATION_INTERVAL'] = s.TASK_GENERATION_INTERVAL
+    s.SUMO_SEED_TO_USE = arguments.seed_no
+    Simulation.settings['SUMO_SEED_TO_USE'] = s.SUMO_SEED_TO_USE
+    s.DRONE_ID_CLOSE_TO_BS = arguments.seed_no
+    Simulation.settings['DRONE_ID_CLOSE_TO_BS'] = s.DRONE_ID_CLOSE_TO_BS
+
+    s.WAIT_PREVIOUS_TASK_TO_BE_PROCESSED = arguments.wait_previous_queue
+    Simulation.settings['WAIT_PREVIOUS_TASK_TO_BE_PROCESSED'] = s.WAIT_PREVIOUS_TASK_TO_BE_PROCESSED
+    logging.basicConfig(level=getattr(logging, arguments.log_level.upper()),
+                        format="%(asctime)s %(levelname)s -> %(message)s")
+    Simulation.settings['LOG_LEVEL'] = arguments.log_level.upper()
+
+    if arguments.record_file:
+        s.USE_RECORD = True
+        Simulation.settings['USE_RECORD'] = True
+        s.RECORD_FILE = arguments.record_file
+        Simulation.settings['RECORD_FILE'] = s.RECORD_FILE
+
 if __name__ == '__main__':
-    logging.basicConfig(level=getattr(logging, s.LOG_LEVEL), format="%(asctime)s %(levelname)s -> %(message)s")
     Simulation.settings = get_settings_to_simulation_object()
-    os.mkdir(f"logs_iperf/{Simulation.real_life_start_time}")
+    cli_arguments = parse_cli_arguments()
+    apply_arguments(cli_arguments)
+    if s.USE_RECORD:
+        record_file_representation = s.RECORD_FILE
+        if '/' in record_file_representation:
+            record_file_representation = record_file_representation.split('/')[-1]
+        Simulation.results_file_name = \
+            f"results/result_{s.ASSIGNMENT_METHOD}_wait{s.WAIT_PREVIOUS_TASK_TO_BE_PROCESSED}_" \
+            f"{record_file_representation}___{Simulation.real_life_start_time}.pickle"
+    else:
+        Simulation.results_file_name = \
+            f"results/result_{s.ASSIGNMENT_METHOD}_wait{s.WAIT_PREVIOUS_TASK_TO_BE_PROCESSED}_" \
+            f"lambda{s.TASK_GENERATION_INTERVAL}_seed{s.SUMO_SEED_TO_USE}_{Simulation.real_life_start_time}.pickle"
+    Simulation.record_file_name = f"records/lambda{s.TASK_GENERATION_INTERVAL}_seed{s.SUMO_SEED_TO_USE}"
+    # os.mkdir(f"logs_iperf/{Simulation.real_life_start_time}")
     controller_utils.delete_all_links()
     setLogLevel(s.MN_WIFI_LOG_LEVEL.lower())
     Simulation.record = SimulationRecord(Simulation.simulation_id, Simulation.real_life_start_time,
@@ -122,16 +174,20 @@ if __name__ == '__main__':
     manager = SumoManager(vehicle_records=vehicle_records)
     add_aps_as_poi_to_sumo(net, manager)
     drone_operator.send_host_coordinates_on_controller(net)
-    makeTerms(net.stations, 'station')
-    makeTerms(net.hosts, 'host')
+    if s.START_XTERM:
+        makeTerms(net.stations, 'station')
+        makeTerms(net.hosts, 'host')
 
     start_host_roles(net)
     # CLI(net)
     simulate_sumo(manager, current_drone_mover)
-    write_as_pickle(Simulation.record, Simulation.record_file_name)
-    CLI(net)
-    handle_tasks()
+    if not s.USE_RECORD:
+        write_as_pickle(Simulation.record, Simulation.record_file_name)
+    # CLI(net)
+    # handle_tasks()
     write_as_pickle(create_simulation_results_data(), Simulation.results_file_name)
-    del manager
     net.stop()
+    # del manager
+    subprocess.call(["pkill", "sumo-gui"])
     stop_children_processes([])
+    subprocess.call(["pkill", "-f", "python main.py"])

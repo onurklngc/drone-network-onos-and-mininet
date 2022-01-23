@@ -10,7 +10,7 @@ from actors.Solution import Action, Solution
 from actors.Vehicle import ConnectionStatus
 from utils import read_pickle_file, get_link_speed_by_rssi, write_as_pickle
 
-RECORD_FILE = "records/record_20220121-072155.pickle"
+RECORD_FILE = "records/archive/record_20220121-072155.pickle"
 
 processor_records = {}
 generator_records = {}

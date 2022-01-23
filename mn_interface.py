@@ -130,7 +130,7 @@ def create_topology(drone_mover):
     if s.SELECT_RANDOM_DRONE_FOR_BS_CONNECTION:
         Simulation.drone_id_close_to_bs = random.randint(0, s.NUMBER_OF_DRONES - 1)
     else:
-        Simulation.drone_id_close_to_bs = s.DRONE_ID_CLOSE_TO_BS
+        Simulation.drone_id_close_to_bs = s.DRONE_ID_CLOSE_TO_BS % s.NUMBER_OF_DRONES
     drone_mover.set_root_node_id(Simulation.drone_id_close_to_bs)
     drone_position_close_to_bs = drone_mover.initial_drone_positions[Simulation.drone_id_close_to_bs]
     if s.BS_LOCATION_PRESET:

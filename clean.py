@@ -25,7 +25,8 @@ def stop_children_processes(processes):
     for p in processes:
         p.send_signal(SIGINT)
     for signalType in [SIGINT, SIGTERM, 9]:
-        kill_process('receiver.py', 'ax', signalType)
+        # kill_process('receiver.py', 'ax', signalType)
+        kill_process('python listen_tasks.py', 'ax', signalType)
         kill_process('sumo-gui', 'ax', signalType)
         kill_process('xterm', 'ax', signalType)
         kill_process('iperf', 'ax', signalType)

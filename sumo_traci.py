@@ -1,6 +1,7 @@
 import logging
 import os
 import random
+import subprocess
 import sys
 import time
 
@@ -70,7 +71,7 @@ class SumoManager(object):
         logging.info("Sumo Manager is initialized.")
 
     def __del__(self):
-        traci.close()
+        traci.close(wait=False)
         logging.info("Sumo Manager is destroyed.")
 
     def prepare_car(self, vehicle_id):
@@ -212,4 +213,6 @@ if __name__ == '__main__':
         get_wait_time(step_start_time, step_end_time, 1)
     print(manager.car_duration)
     print(sum(manager.car_duration.values()) / len(manager.car_duration.values()))
-    del manager
+    subprocess.call(["pkill", "sumo-gui"])
+
+    # del manager

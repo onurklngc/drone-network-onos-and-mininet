@@ -26,9 +26,9 @@ class Simulation:
     upload_reports = {}
     number_of_reassigned_tasks = 0
     settings = None
-    real_life_start_time = time.strftime('%Y%m%d-%H%M%S')
-    results_file_name = f"results/result_{real_life_start_time}.pickle"
-    record_file_name = f"records/record_{real_life_start_time}.pickle"
+    real_life_start_time = time.strftime('%m%d_%H%M')
+    results_file_name = None
+    record_file_name = None
     cloud_iperf_process = None
     record = None
     old_record = None
