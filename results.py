@@ -11,7 +11,7 @@ from actors.Task import Status
 from actors.constant import Color
 from utils import read_pickle_file
 
-RESULT_FILENAME = ""
+RESULT_FILEPATH = f""
 SWITCH_TO_LATEST_SIMULATION = True
 
 
@@ -31,7 +31,7 @@ def create_simulation_results_data():
     return results
 
 
-def get_simulation_results(filename=RESULT_FILENAME.strip()):
+def get_simulation_results(filename=RESULT_FILEPATH.strip()):
     try:
         return read_pickle_file(filename)
     except (EOFError, FileNotFoundError) as e:
@@ -66,13 +66,14 @@ def print_results(result_file_name, sim_results):
             weighted_priority = ""
         rows.append([f"{task.no}", status, f"{task.owner}->{processor}", task.get_timeline(), task.deadline, penalty,
                      task.priority, weighted_priority])
-    settings_to_print = f'Name:{result_file_name}\tTime:{sim_results["current_time"]-1}\t' \
+    settings_to_print = f'Name:{result_file_name}\tTime:{sim_results["current_time"] - 1}\t' \
                         f'Method:{sim_results["settings"]["ASSIGNMENT_METHOD"]}\t' \
                         f'Task Interval:{sim_results["settings"]["TASK_GENERATION_INTERVAL"]}' \
-                        f'\t Number of tasks:{len(sim_results["tasks"])} \t Total weighted penalty: {total_weighted_penalty:.1f}'
+                        f'\t Number of tasks:{len(sim_results["tasks"])} \t ' \
+                        f'Total weighted penalty: {total_weighted_penalty:.1f}'
     logging.info(f'\n\n{settings_to_print}\n'
                  f'{tabulate(rows, headers, tablefmt="pretty", stralign="left")}\n'
-                 f'{settings_to_print}\t\t Total weighted penalty: {total_weighted_penalty:.0f}')
+                 f'{settings_to_print}')
 
 
 def get_latest_simulation_file():
@@ -86,13 +87,13 @@ def tail_results(filename):
             filename = get_latest_simulation_file()
         sim_results = get_simulation_results(filename)
         print_results(filename, sim_results)
-        time.sleep(5)
+        time.sleep(100)
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, "INFO"), format="%(asctime)s %(levelname)s -> %(message)s")
-    if RESULT_FILENAME:
-        result_file_to_view = RESULT_FILENAME.strip()
+    if RESULT_FILEPATH:
+        result_file_to_view = RESULT_FILEPATH.strip()
     else:
         result_file_to_view = get_latest_simulation_file()
     results = get_simulation_results(result_file_to_view)

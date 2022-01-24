@@ -93,7 +93,7 @@ def configure_tx_powers(new_net, drone_ap_by_id):
 
 def add_bs(net, bs_location, bs_id=s.BS_ID_OFFSET):
     bs = net.addAccessPoint('%s%d' % (s.BS_NAME_PREFIX, bs_id), wlans=2, ssid='ssid-bs',
-                            mode="g", channel=10, protocols='OpenFlow13', antennaGain=s.ANTENNA_GAIN,
+                            mode="a", channel=10, protocols='OpenFlow13', antennaGain=s.ANTENNA_GAIN,
                             position="{},{},{}".format(*bs_location, s.BS_HEIGHT))
     Simulation.bs_host = net.addHost('bs%d' % bs_id, mac='10:00:00:00:00:01')
     net.bs_map[bs_id] = bs

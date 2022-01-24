@@ -118,7 +118,7 @@ def get_simulation_record(filename):
 
 
 def get_solution(filename):
-    return read_pickle_file(filename.replace("record", "solution"))
+    return read_pickle_file(filename.replace("record", "solution") + "_solution")
 
 
 if __name__ == '__main__':

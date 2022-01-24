@@ -234,6 +234,12 @@ class TaskResult:
         timeline += end_time
         return timeline
 
+    def get_prioritized_penalty(self):
+        result = 0
+        if self.penalty:
+            result = max(0, self.penalty * self.priority)
+        return result
+
     def __str__(self) -> str:
         processor = f"{Color.BLUE}cloud{Color.ENDC}" if self.is_assigned_to_cloud else self.assigned_processor
 

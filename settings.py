@@ -1,12 +1,14 @@
 # MAIN
-ASSIGNMENT_METHOD = "AGGRESSIVE"  # AGGRESSIVE, ADAPTIVE or OPTIMUM
+ASSIGNMENT_METHOD = "OPTIMUM"  # AGGRESSIVE, ADAPTIVE or OPTIMUM
 WAIT_PREVIOUS_TASK_TO_BE_PROCESSED = False
-TASK_GENERATION_INTERVAL = 5
-SUMO_SEED_TO_USE = 13
+TASK_GENERATION_INTERVAL = 10
+SUMO_SEED_TO_USE = 1
 DRONE_ID_CLOSE_TO_BS = SUMO_SEED_TO_USE
+CASE = "request_interval"
+SUMO_CFG_PATH = "/home/onur/Coding/projects/sdnCaching/configs/besiktas-2/osm.sumocfg"
 
-USE_RECORD = False
-RECORD_FILE = "record_AGGRESSIVE_waitFalse_lambda15_seed1_0123_0222.pickle"
+USE_RECORD = True
+RECORD_FILE = "records/request_interval/lambda15_seed1"
 
 TASK_FAILURE_PENALTY_OFFSET = 60
 SIMULATION_DURATION = 1000
@@ -44,7 +46,6 @@ HEIGHT_DEVIATION = 3
 SKIPPED_STEPS = 130
 SUMO_BINARY = "sumo-gui"
 # SUMO_CFG_PATH = "/home/onur/Coding/projects/sdnCaching/configs/besiktas-2-satellite/osm.sumocfg"
-SUMO_CFG_PATH = "/home/onur/Coding/projects/sdnCaching/configs/besiktas-2/osm.sumocfg"
 SUMO_SIMULATED_DATA_PATH = "/home/onur/Coding/projects/sdnCaching/configs/besiktas/sumo_results.xml"
 VEHICLE_PREFIX = "veh"
 START_SIMULATION_DIRECTLY = True

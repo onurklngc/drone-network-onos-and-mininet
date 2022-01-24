@@ -3,8 +3,6 @@
 """UAVs providing network to vehicles."""
 import argparse
 import logging
-import os
-import subprocess
 import time
 
 from mininet.log import setLogLevel
@@ -134,10 +132,8 @@ def apply_arguments(arguments):
         s.RECORD_FILE = arguments.record_file
         Simulation.settings['RECORD_FILE'] = s.RECORD_FILE
 
-if __name__ == '__main__':
-    Simulation.settings = get_settings_to_simulation_object()
-    cli_arguments = parse_cli_arguments()
-    apply_arguments(cli_arguments)
+
+def set_output_file_names():
     if s.USE_RECORD:
         record_file_representation = s.RECORD_FILE
         if '/' in record_file_representation:
@@ -149,8 +145,15 @@ if __name__ == '__main__':
         Simulation.results_file_name = \
             f"results/result_{s.ASSIGNMENT_METHOD}_wait{s.WAIT_PREVIOUS_TASK_TO_BE_PROCESSED}_" \
             f"lambda{s.TASK_GENERATION_INTERVAL}_seed{s.SUMO_SEED_TO_USE}_{Simulation.real_life_start_time}.pickle"
-    Simulation.record_file_name = f"records/lambda{s.TASK_GENERATION_INTERVAL}_seed{s.SUMO_SEED_TO_USE}"
-    # os.mkdir(f"logs_iperf/{Simulation.real_life_start_time}")
+    logging.info(f"Results file: {Simulation.results_file_name}")
+
+
+if __name__ == '__main__':
+    Simulation.settings = get_settings_to_simulation_object()
+    cli_arguments = parse_cli_arguments()
+    apply_arguments(cli_arguments)
+    set_output_file_names()
+    Simulation.record_file_name = f"records/{s.CASE}/lambda{s.TASK_GENERATION_INTERVAL}_seed{s.SUMO_SEED_TO_USE}"
     controller_utils.delete_all_links()
     setLogLevel(s.MN_WIFI_LOG_LEVEL.lower())
     Simulation.record = SimulationRecord(Simulation.simulation_id, Simulation.real_life_start_time,
@@ -159,6 +162,10 @@ if __name__ == '__main__':
         Simulation.old_record = get_simulation_record(s.RECORD_FILE)
         vehicle_records = Simulation.old_record.vehicles
         task_records = Simulation.old_record.tasks
+        # s.SUMO_SEED_TO_USE = Simulation.old_record["settings"]["SUMO_SEED_TO_USE"]
+        # s.DRONE_ID_CLOSE_TO_BS = s.SUMO_SEED_TO_USE
+        # s.SUMO_CFG_PATH = Simulation.old_record["settings"]["SUMO_CFG_PATH"]
+        logging.info(f"Using record file: {s.RECORD_FILE}")
     else:
         vehicle_records = None
         task_records = None
@@ -187,7 +194,6 @@ if __name__ == '__main__':
     # handle_tasks()
     write_as_pickle(create_simulation_results_data(), Simulation.results_file_name)
     net.stop()
-    # del manager
-    subprocess.call(["pkill", "sumo-gui"])
+    del manager
+    # subprocess.call(["python", "clean.py"])
     stop_children_processes([])
-    subprocess.call(["pkill", "-f", "python main.py"])

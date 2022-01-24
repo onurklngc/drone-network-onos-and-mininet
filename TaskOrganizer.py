@@ -121,8 +121,21 @@ class TaskOrganizer:
                 logging.error(f"Task#{task.no} owner {task.owner.station.name} is {task.owner.connection_status.name}. "
                               f"Skipping...")
                 continue
+            if task.owner.station.wintfs[0].associatedTo is None:
+                logging.error(
+                    f"Task#{task.no} owner {task.owner.station.name} does not have associated AP. Skipping...")
+                continue
             best_matching_for_task = None
             for processor in processors:
+                if processor.connection_status != ConnectionStatus.CONNECTED:
+                    logging.error(
+                        f"Processor {processor.sumo_id}({processor.station.name}) is "
+                        f"{task.owner.connection_status.name}. Skipping...")
+                    continue
+                if processor.station.wintfs[0].associatedTo is None:
+                    logging.error(f"Processor {processor.sumo_id}({processor.station.name}) does not have "
+                                  f"associated AP. Skipping...")
+                    continue
                 if task.size > processor.remaining_queue_size:
                     continue
                 tx_time = get_estimated_tx_time_between_stations(current_time, task.owner.station, processor.station,

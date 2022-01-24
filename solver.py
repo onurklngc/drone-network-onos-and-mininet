@@ -1,3 +1,4 @@
+import argparse
 import itertools
 import logging
 from math import ceil
@@ -10,15 +11,16 @@ from actors.Solution import Action, Solution
 from actors.Vehicle import ConnectionStatus
 from utils import read_pickle_file, get_link_speed_by_rssi, write_as_pickle
 
-RECORD_FILE = "records/archive/record_20220121-072155.pickle"
+record_file = "records/vehicle_speed/5/lambda10_seed16"
 
+TIME_WINDOW = 120
+MAX_COMBINATION_TO_TRY_PER_WINDOW = 5000000
 processor_records = {}
 generator_records = {}
 ap_records = {}
 processors = {}
 generators = {}
 task_based_available_processors = {}
-TIME_WINDOW = 120
 record = None
 CLOUD = 0
 earliest_next_task_start_tx_time = {CLOUD: 0}
@@ -72,7 +74,7 @@ def get_time_slots_sharing_same_ap(veh1, veh2):
     return shared_slots
 
 
-def get_simulation_record(filename=RECORD_FILE):
+def get_simulation_record(filename):
     global ap_records, traffics
     sim_record = read_pickle_file(filename)
     ap_records = sim_record.aps
@@ -97,10 +99,11 @@ def get_simulation_record(filename=RECORD_FILE):
         for moment_time, moment in vehicle.moments.items():
             if moment_time > vehicle.departure_time:
                 break
-            if moment.rssi and moment.connection_status == ConnectionStatus.CONNECTED:
+            if moment.rssi and moment.connection_status == ConnectionStatus.CONNECTED and \
+                    moment.associated_ap in sim_record.aps:
                 moment.bw = get_link_speed_by_rssi(moment.rssi)
-                vehicle.bw[moment_time] = moment.bw
                 sim_record.aps[moment.associated_ap].add_station(moment_time, sumo_id)
+                vehicle.bw[moment_time] = moment.bw
                 if sumo_id not in earliest_next_task_start_tx_time:
                     earliest_next_task_start_tx_time[sumo_id] = vehicle.entry_time
                 if moment.bw > vehicle.max_moment_bw:
@@ -315,10 +318,23 @@ def get_decisions_for_given_time(given_time, decisions, corresponding_combinatio
     return decisions_on_given_time
 
 
+def parse_cli_arguments():
+    global record_file
+    parser = argparse.ArgumentParser("Create solution for record")
+    parser.add_argument('--record-file', type=str, help="Record file to use to import tasks and vehicle assignments")
+    parser.add_argument("-l", "--log-level", dest="log_level",
+                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                        help="Set the logging level", default="INFO")
+    arguments = parser.parse_args()
+    logging.basicConfig(level=getattr(logging, arguments.log_level), format="%(asctime)s %(levelname)s -> %(message)s")
+    if arguments.record_file:
+        record_file = arguments.record_file
+
+
 if __name__ == '__main__':
-    logging.basicConfig(level=getattr(logging, "INFO"), format="%(asctime)s %(levelname)s -> %(message)s")
-    solution_filename = RECORD_FILE.replace("record", "solution")
-    record = get_simulation_record()
+    parse_cli_arguments()
+    solution_filename = record_file.replace("record", "solution") + "_solution"
+    record = get_simulation_record(record_file)
     solution = []
     scores = []
     total_score = 0
@@ -333,7 +349,7 @@ if __name__ == '__main__':
         logging.info(f"Number of possible pairings: {num_of_decisions}, possibilities: {possibilities}")
 
         is_shrunk_window = False
-        while possibilities > 1500000:
+        while possibilities > MAX_COMBINATION_TO_TRY_PER_WINDOW:
             is_shrunk_window = True
             window_end_time -= 1
             decisions_in_given_time_window, num_of_decisions, possibilities = \

@@ -36,5 +36,6 @@ def stop_children_processes(processes):
 if __name__ == '__main__':
     subprocess.call(["pkill", "-f", "/usr/bin/python /home/onur/.local/share/JetBrains/Toolbox/apps"
                                     "/PyCharm-P/ch-0/212.5457.59/plugins/python/helpers/pydev/pydevd.py"])
+    subprocess.call(["pkill", "-f", "python main.py"])
     stop_children_processes([])
     subprocess.call(['mn', '-c'])
