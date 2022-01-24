@@ -11,7 +11,7 @@ from actors.Task import Status
 from actors.constant import Color
 from utils import read_pickle_file
 
-RESULT_FILEPATH = f"results/result_OPTIMUM_waitFalse_lambda10_seed7___0124_1124.pickle"
+RESULT_FILEPATH = f""
 SWITCH_TO_LATEST_SIMULATION = True
 REFRESH_INTERVAL = 50
 

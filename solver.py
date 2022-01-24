@@ -202,8 +202,9 @@ def get_estimated_tx_time_station_to_station(task_size, task_start_time, owner_o
         logging.debug("Skipping station_to_station")
         return
     tx_time += 5  # connection delay
-    temp_traffics[tx_start_time:tx_time + tx_start_time][:, owner_object.index] += 1
-    temp_traffics[tx_start_time:tx_time + tx_start_time][:, processor_object.index] += 1
+    tx_time += tx_start_time - task_start_time
+    temp_traffics[task_start_time:tx_time + task_start_time][:, owner_object.index] += 1
+    temp_traffics[task_start_time:tx_time + task_start_time][:, processor_object.index] += 1
 
     logging.debug(f"Estimated tx time: {tx_time} to station")
     return ceil(tx_time)
@@ -214,6 +215,7 @@ def evaluate_combination(best_total_prioritized_penalty, tasks_to_be_decided, co
     temp_earliest_next_task_start_tx_time = earliest_next_task_start_tx_time.copy()
     temp_traffics = traffics.copy()
     penalties_by_task = []
+    estimated_tx_times = []
     for decision_index, task in enumerate(tasks_to_be_decided):
         owner_object = task.owner_object
         decision = combination[decision_index]
@@ -228,6 +230,7 @@ def evaluate_combination(best_total_prioritized_penalty, tasks_to_be_decided, co
         elif decision == Action.SKIP:
             prioritized_penalty = task.priority * (
                     owner_object.departure_time - task.deadline + s.TASK_FAILURE_PENALTY_OFFSET)
+            estimated_tx_time = 0
         else:
             estimated_tx_time = get_estimated_tx_time_station_to_station(task.size, task.start_time, owner_object,
                                                                          decision, task.pair_bw[decision.sumo_id],
@@ -241,7 +244,7 @@ def evaluate_combination(best_total_prioritized_penalty, tasks_to_be_decided, co
             prioritized_penalty = task.priority * (task.start_time + estimated_tx_time + process_time - task.deadline)
         if prioritized_penalty < 0:
             prioritized_penalty = max(-10, prioritized_penalty)
-
+        estimated_tx_times.append(estimated_tx_time)
         total_prioritized_penalty += prioritized_penalty
         if best_total_prioritized_penalty < total_prioritized_penalty:
             logging.debug(
@@ -249,7 +252,8 @@ def evaluate_combination(best_total_prioritized_penalty, tasks_to_be_decided, co
                 f"current total_prioritized_penalty({total_prioritized_penalty})")
             return decision_index
         penalties_by_task.append(prioritized_penalty)
-    return total_prioritized_penalty, penalties_by_task, temp_earliest_next_task_start_tx_time, temp_traffics
+    return total_prioritized_penalty, penalties_by_task, temp_earliest_next_task_start_tx_time, temp_traffics, \
+           estimated_tx_times
 
 
 def optimize_time_window(decisions, start, end):
@@ -277,13 +281,15 @@ def optimize_time_window(decisions, start, end):
             failed_part = combination[:combination_result + 1]
             continue
         num_of_combinations_tried += 1
-        decision_set_cost, temp_scores, temp_earliest_next_task_start_tx_time, temp_traffics = combination_result
+        decision_set_cost, temp_scores, temp_earliest_next_task_start_tx_time, temp_traffics, estimated_tx_times = \
+            combination_result
         option_costs.append(decision_set_cost)
         if decision_set_cost < best_total_prioritized_penalty:
             best_total_prioritized_penalty = decision_set_cost
             best_combination = combination
             best_scores_by_decision = temp_scores
             logging.info(f"Better combination found: {best_combination}: {best_scores_by_decision}")
+            logging.info(f"Estimated tx times: {estimated_tx_times}")
     logging.info(option_costs)
     logging.info(
         f"Best decision for ({start},{end}) has {best_total_prioritized_penalty:.0f} penalty "
@@ -305,12 +311,11 @@ def estimate_window_load(sim_record, start, end):
 
     for task_no, current_task in sim_record.tasks.items():
         if start <= current_task.start_time < end:
-            decisions_in_the_given_time_window[task_no] = []
+            decisions_in_the_given_time_window[task_no] = [Action.CLOUD, Action.SKIP]
             # decisions_in_the_given_time_window[task_no] = []
             for processor in task_based_available_processors[task_no]:
                 if current_task.start_time < processor.no_new_task_start_time and processor.entry_time < end:
                     decisions_in_the_given_time_window[task_no].append(processor)
-            decisions_in_the_given_time_window[task_no].extend([Action.CLOUD, Action.SKIP])
     decision_counter, possibilities_in_window = count_possible_pairs(decisions_in_the_given_time_window)
     return decisions_in_the_given_time_window, decision_counter, possibilities_in_window
 
