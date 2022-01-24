@@ -16,7 +16,7 @@ from actors.Vehicle import TaskGeneratorVehicle, ProcessorVehicle, ConnectionSta
 from actors.constant import Color
 from dispatch_tasks import send_task_data_to_cloud, send_task_data_to_processor
 from sumo_traci import SumoVehicle
-from utils import get_estimated_tx_time_between_stations, get_estimated_tx_time_station_to_cloud
+from utils import get_estimated_tx_time_between_stations, get_estimated_tx_time_station_to_cloud, check_connection
 
 
 class AssignmentMethod(Enum):
@@ -117,24 +117,11 @@ class TaskOrganizer:
     def get_next_task_pair(self, current_time, processors):
         task_scores = []
         for task in self.pool:
-            if task.owner.connection_status != ConnectionStatus.CONNECTED:
-                logging.error(f"Task#{task.no} owner {task.owner.station.name} is {task.owner.connection_status.name}. "
-                              f"Skipping...")
-                continue
-            if task.owner.station.wintfs[0].associatedTo is None:
-                logging.error(
-                    f"Task#{task.no} owner {task.owner.station.name} does not have associated AP. Skipping...")
+            if not check_connection(f"Task#{task.no} owner", task.owner):
                 continue
             best_matching_for_task = None
             for processor in processors:
-                if processor.connection_status != ConnectionStatus.CONNECTED:
-                    logging.error(
-                        f"Processor {processor.sumo_id}({processor.station.name}) is "
-                        f"{task.owner.connection_status.name}. Skipping...")
-                    continue
-                if processor.station.wintfs[0].associatedTo is None:
-                    logging.error(f"Processor {processor.sumo_id}({processor.station.name}) does not have "
-                                  f"associated AP. Skipping...")
+                if not check_connection("Processor", processor):
                     continue
                 if task.size > processor.remaining_queue_size:
                     continue
@@ -188,6 +175,8 @@ class TaskOrganizer:
             action = self.solution.decisions[task.no]
             if action == Action.SKIP:
                 continue
+            if not check_connection(f"Task#{task.no} owner", task.owner):
+                continue
             if action.sumo_id in Simulation.all_vehicles:
                 processor = Simulation.all_vehicles[action.sumo_id]
                 if processor.departure_time:
@@ -198,6 +187,8 @@ class TaskOrganizer:
                 if task.size > processor.remaining_queue_size:
                     logging.info(f"Processor queue size is not enough for task#{task.no}")
                     continue
+                # if not check_connection("Processor", processor):
+                #     continue
                 self.pool.remove(task)
                 estimated_tx_time = get_estimated_tx_time_between_stations(current_time, task.owner.station,
                                                                            processor.station,

@@ -6,10 +6,16 @@ from tabulate import tabulate
 
 from actors.Task import Status
 
-file_list = {
+request_interval_file_list = {
+    "Optimum": "/home/onur/Coding/projects/sdnCaching/results/request_interval/optimum",
     "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/request_interval/adaptive",
     "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/request_interval/aggressive",
     "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/request_interval/aggressive-wait",
+}
+vehicle_speed_file_list = {
+    "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed/adaptive",
+    "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed/aggressive",
+    "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed/aggressive-wait",
 }
 
 
@@ -56,7 +62,7 @@ def get_average_system_times(tasks):
     total_process_time = 0
     task_counter = 0
     for task in tasks:
-        if task.status not in [Status.COMPLETED, Status.PROCESSING]:
+        if task.status in [Status.COMPLETED, Status.PROCESSING]:
             task_counter += 1
             pool_time = task.tx_start_time - task.start_time
             tx_time = task.tx_end_time - task.start_time
@@ -101,7 +107,8 @@ def get_ratio_of_tasks_assigned_to_cloud(tasks):
 
 
 def get_category_delays(results):
-    headers = ["Method-Category", "Average Penalty", "Task Failure Ratio", "Cloud Ratio"]
+    headers = ["Method-Category", "Average Penalty", "Task Failure Ratio", "Cloud Ratio", "Average Delay",
+               "Average Pool Time", "Average Tx Time", "Average Queue Time", "Average Process Time"]
     rows = []
     for method_name, method_data in results.items():
         for category, category_results in method_data.items():
@@ -109,19 +116,21 @@ def get_category_delays(results):
             avg_penalty = get_average_penalty(tasks)
             ratio_of_failed_tasks = get_ratio_of_failed_tasks(tasks)
             ratio_of_tasks_assigned_to_cloud = get_ratio_of_tasks_assigned_to_cloud(tasks)
+            delay_averages = get_average_system_times(tasks)
 
-            rows.append([f"{method_name}-{category}", f"{avg_penalty:.2f}", f"{ratio_of_failed_tasks:.3f}",
-                         f"{ratio_of_tasks_assigned_to_cloud:.3f}"])
-
+            rows.append([f"{category}-{method_name}", f"{avg_penalty:.2f}", f"{ratio_of_failed_tasks:.3f}",
+                         f"{ratio_of_tasks_assigned_to_cloud:.3f}", f"{delay_averages['average_delay']:.2f}",
+                         f"{delay_averages['average_pool_time']:.2f}", f"{delay_averages['average_tx_time']:.2f}",
+                         f"{delay_averages['average_queue_time']:.0f}",
+                         f"{delay_averages['average_process_time']:.2f}"])
+    rows.sort(key=lambda x: int(x[0].split('-')[0]))
     logging.info(f'\n{tabulate(rows, headers, tablefmt="pretty", stralign="left")}')
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, "INFO"), format="%(asctime)s %(levelname)s -> %(message)s")
 
-    result_data = get_multiple_files(file_list)
-    # print(result_data)
+    result_data = get_multiple_files(request_interval_file_list)
     get_category_delays(result_data)
-    pass
-    # adaptive5_tasks = get_specific_tasks(result_data, "Adaptive", "5")
-    # print(adaptive5_tasks)
+    result_data = get_multiple_files(vehicle_speed_file_list)
+    get_category_delays(result_data)

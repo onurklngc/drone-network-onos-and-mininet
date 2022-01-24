@@ -1,13 +1,13 @@
 # MAIN
-ASSIGNMENT_METHOD = "OPTIMUM"  # AGGRESSIVE, ADAPTIVE or OPTIMUM
+ASSIGNMENT_METHOD = "AGGRESSIVE"  # AGGRESSIVE, ADAPTIVE or OPTIMUM
 WAIT_PREVIOUS_TASK_TO_BE_PROCESSED = False
 TASK_GENERATION_INTERVAL = 10
-SUMO_SEED_TO_USE = 1
+SUMO_SEED_TO_USE = 101
 DRONE_ID_CLOSE_TO_BS = SUMO_SEED_TO_USE
-CASE = "request_interval"
+CASE = "process_speed/slow"
 SUMO_CFG_PATH = "/home/onur/Coding/projects/sdnCaching/configs/besiktas-2/osm.sumocfg"
 
-USE_RECORD = True
+USE_RECORD = False
 RECORD_FILE = "records/request_interval/lambda15_seed1"
 
 TASK_FAILURE_PENALTY_OFFSET = 60
@@ -28,7 +28,7 @@ ALLOWED_MAX_TX_TIME = 250
 # RANDOMNESS CONTROL
 USE_RANDOM_SUMO_SEED = False
 SELECT_RANDOM_DRONE_FOR_BS_CONNECTION = False
-BS_LOCATION_PRESET = [100, 100]
+BS_LOCATION_PRESET = [50, 50]
 
 # MOVEMENT
 RANDOM_DRONE_MOVEMENT = False
@@ -65,9 +65,9 @@ VEHICLE_TYPE_PROPERTIES = {
           "priority": 0.3, "type_abbreviation": "T"},
     # Processors
     "A": {"type": "trailer", "shape": "truck/semitrailer", "color": "purple",
-          "process_speed": 2000, "queue_size": 100000, "type_abbreviation": "A"},
+          "process_speed": 700, "queue_size": 100000, "type_abbreviation": "A"},
     "B": {"type": "bus", "shape": "bus", "color": "cyan",
-          "process_speed": 1500, "queue_size": 70000, "type_abbreviation": "B"},
+          "process_speed": 500, "queue_size": 70000, "type_abbreviation": "B"},
     # Other
     "V": {"type": "vip", "shape": "vip", "color": "magenta", "type_abbreviation": "V"},
     "P": {"type": "private", "shape": "passenger/sedan", "color": "pink", "type_abbreviation": "P"},
@@ -106,7 +106,7 @@ CLOUD_PROBABILITY_BY_POOL_SIZE = {
     7: 0.7,
     10: 0.9
 }
-CLOUD_LINK_DELAY = "10ms"
+CLOUD_LINK_DELAY = "8ms"
 
 # COMMUNICATION
 TASK_ASSIGNER_SERVER = "CONTROLLER_HOST"  # BS_HOST, NAT, CONTROLLER_HOST

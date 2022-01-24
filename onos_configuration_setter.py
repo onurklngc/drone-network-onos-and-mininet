@@ -20,7 +20,7 @@ applications_to_activate = [
 
 configurations = {
     "org.onosproject.fwd.ReactiveForwarding": {
-        "flowTimeout": "300",
+        "flowTimeout": "999",
     },
 }
 

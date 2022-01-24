@@ -11,8 +11,9 @@ from actors.Task import Status
 from actors.constant import Color
 from utils import read_pickle_file
 
-RESULT_FILEPATH = f""
+RESULT_FILEPATH = f"results/result_OPTIMUM_waitFalse_lambda10_seed7___0124_1124.pickle"
 SWITCH_TO_LATEST_SIMULATION = True
+REFRESH_INTERVAL = 50
 
 
 def create_simulation_results_data():
@@ -49,6 +50,9 @@ def print_results(result_file_name, sim_results):
             penalty = f"{task.penalty:.1f}"
         elif task.status == Status.OWNER_LEFT:
             task.penalty = task.owner_departure_time - task.deadline + s.TASK_FAILURE_PENALTY_OFFSET
+            penalty = f"{task.penalty:.1f}"
+        elif task.status in [Status.TX_PROCESSOR, Status.TX_CLOUD]:
+            task.penalty = max(sim_results['current_time'] - task.deadline, 0)
             penalty = f"{task.penalty:.1f}"
         else:
             penalty = ""
@@ -87,7 +91,7 @@ def tail_results(filename):
             filename = get_latest_simulation_file()
         sim_results = get_simulation_results(filename)
         print_results(filename, sim_results)
-        time.sleep(100)
+        time.sleep(REFRESH_INTERVAL)
 
 
 if __name__ == '__main__':

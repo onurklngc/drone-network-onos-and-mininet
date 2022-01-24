@@ -70,8 +70,8 @@ def simulate_sumo(sumo_manager, drone_mover):
         handle_tasks()
         # logging.info("Time it 7")
         step_end_time = time.time()
-        wait_time = get_wait_time(step_start_time, step_end_time, s.SIMULATION_STEP_DELAY / 1000.0)
         write_as_pickle(create_simulation_results_data(), Simulation.results_file_name)
+        wait_time = get_wait_time(step_start_time, step_end_time, s.SIMULATION_STEP_DELAY / 1000.0)
         time.sleep(wait_time)
 
 

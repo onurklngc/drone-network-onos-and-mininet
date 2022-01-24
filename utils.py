@@ -5,6 +5,7 @@ import random
 
 import settings as s
 from actors.TrafficObserver import TrafficObserver
+from actors.Vehicle import ConnectionStatus
 from actors.constant import Color
 
 
@@ -120,6 +121,18 @@ def get_simulation_record(filename):
 def get_solution(filename):
     return read_pickle_file(filename.replace("record", "solution") + "_solution")
 
+
+def check_connection(role_name, vehicle):
+    if vehicle.connection_status != ConnectionStatus.CONNECTED:
+        logging.error(
+            f"{role_name} {vehicle.sumo_id}({vehicle.station.name}) is "
+            f"{vehicle.connection_status.name}. Skipping...")
+        return False
+    if vehicle.station.wintfs[0].associatedTo is None:
+        logging.error(f"{role_name} {vehicle.sumo_id}({vehicle.station.name}) does not have "
+                      f"associated AP. Skipping...")
+        return False
+    return True
 
 if __name__ == '__main__':
     record = get_simulation_record(s.RECORD_FILE)

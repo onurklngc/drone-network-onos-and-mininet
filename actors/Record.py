@@ -106,10 +106,8 @@ class VehicleRecord:
             self.moments[moment_time].set_connection_status(status)
 
     def get_moment(self, moment_time):
-        try:
-            return self.moments[moment_time]
-        except Exception as e:
-            logging.exception(e)
+        return self.moments[moment_time]
+
 
 
 class ApRecord:

@@ -236,6 +236,10 @@ class TaskResult:
 
     def get_prioritized_penalty(self):
         result = 0
+        if self.status == Status.OWNER_LEFT:
+            self.penalty = self.owner_departure_time - self.deadline + s.TASK_FAILURE_PENALTY_OFFSET
+        elif self.status in [Status.TX_PROCESSOR, Status.TX_CLOUD]:
+            self.penalty = max(s.SIMULATION_DURATION - self.deadline, 0)
         if self.penalty:
             result = max(0, self.penalty * self.priority)
         return result

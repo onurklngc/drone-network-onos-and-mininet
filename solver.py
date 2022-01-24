@@ -11,10 +11,10 @@ from actors.Solution import Action, Solution
 from actors.Vehicle import ConnectionStatus
 from utils import read_pickle_file, get_link_speed_by_rssi, write_as_pickle
 
-record_file = "records/vehicle_speed/5/lambda10_seed16"
+record_file = "records/request_interval/lambda10_seed7"
 
-TIME_WINDOW = 120
-MAX_COMBINATION_TO_TRY_PER_WINDOW = 5000000
+TIME_WINDOW = 600
+MAX_COMBINATION_TO_TRY_PER_WINDOW = 10000000
 processor_records = {}
 generator_records = {}
 ap_records = {}
@@ -172,14 +172,15 @@ def get_estimated_tx_time_station_to_cloud(task_size, given_time, owner_object, 
 
 def get_estimated_tx_time_station_to_station(task_size, task_start_time, owner_object, processor_object, task_pair_bw,
                                              temp_earliest_next_task_start_tx_time, temp_traffics):
-    tx_start_time = max(temp_earliest_next_task_start_tx_time[processor_object.sumo_id], task_start_time)
+    tx_start_time = ceil(max(temp_earliest_next_task_start_tx_time[processor_object.sumo_id], task_start_time))
     if processor_object.no_new_task_start_time <= tx_start_time:
         return
     if owner_object.departure_time <= tx_start_time:
         return
     generator_associated_ap = owner_object.get_moment(tx_start_time).associated_ap
     processor_associated_ap = processor_object.get_moment(tx_start_time).associated_ap
-    if not generator_associated_ap or not processor_associated_ap:
+    if not generator_associated_ap or not processor_associated_ap or \
+            generator_associated_ap not in ap_records or processor_associated_ap not in ap_records:
         return
     generator_ap_moment = ap_records[generator_associated_ap].get_moment(tx_start_time)
     processor_ap_moment = ap_records[processor_associated_ap].get_moment(tx_start_time)
@@ -196,7 +197,7 @@ def get_estimated_tx_time_station_to_station(task_size, task_start_time, owner_o
         processor_ap_load += temp_traffics[tx_start_time][traffic_indices[station]]
 
     ap_load = max(generator_ap_load, processor_ap_load)
-    tx_time = get_number_of_elements_sum_equal_to_given_number(task_pair_bw[tx_start_time:], task_size * ap_load)
+    tx_time = get_number_of_elements_sum_equal_to_given_number(task_pair_bw[task_start_time:], task_size * ap_load)
     if tx_time is None:
         logging.debug("Skipping station_to_station")
         return
@@ -235,8 +236,11 @@ def evaluate_combination(best_total_prioritized_penalty, tasks_to_be_decided, co
             if not estimated_tx_time or estimated_tx_time > s.ALLOWED_MAX_TX_TIME:
                 return decision_index
             process_time = ceil(task.size / decision.process_speed)
-            temp_earliest_next_task_start_tx_time[decision.sumo_id] += max(estimated_tx_time, process_time)
+            temp_earliest_next_task_start_tx_time[decision.sumo_id] += \
+                estimated_tx_time + process_time * (task.size / decision.queue_size)
             prioritized_penalty = task.priority * (task.start_time + estimated_tx_time + process_time - task.deadline)
+        if prioritized_penalty < 0:
+            prioritized_penalty = max(-10, prioritized_penalty)
 
         total_prioritized_penalty += prioritized_penalty
         if best_total_prioritized_penalty < total_prioritized_penalty:
@@ -279,6 +283,7 @@ def optimize_time_window(decisions, start, end):
             best_total_prioritized_penalty = decision_set_cost
             best_combination = combination
             best_scores_by_decision = temp_scores
+            logging.info(f"Better combination found: {best_combination}: {best_scores_by_decision}")
     logging.info(option_costs)
     logging.info(
         f"Best decision for ({start},{end}) has {best_total_prioritized_penalty:.0f} penalty "
@@ -300,11 +305,12 @@ def estimate_window_load(sim_record, start, end):
 
     for task_no, current_task in sim_record.tasks.items():
         if start <= current_task.start_time < end:
-            decisions_in_the_given_time_window[task_no] = [Action.CLOUD, Action.SKIP]
+            decisions_in_the_given_time_window[task_no] = []
             # decisions_in_the_given_time_window[task_no] = []
             for processor in task_based_available_processors[task_no]:
                 if current_task.start_time < processor.no_new_task_start_time and processor.entry_time < end:
                     decisions_in_the_given_time_window[task_no].append(processor)
+            decisions_in_the_given_time_window[task_no].extend([Action.CLOUD, Action.SKIP])
     decision_counter, possibilities_in_window = count_possible_pairs(decisions_in_the_given_time_window)
     return decisions_in_the_given_time_window, decision_counter, possibilities_in_window
 
