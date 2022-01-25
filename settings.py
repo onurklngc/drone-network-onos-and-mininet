@@ -2,9 +2,9 @@
 ASSIGNMENT_METHOD = "ADAPTIVE"  # AGGRESSIVE, ADAPTIVE or OPTIMUM
 WAIT_PREVIOUS_TASK_TO_BE_PROCESSED = False
 TASK_GENERATION_INTERVAL = 10
-SUMO_SEED_TO_USE = 111
+SUMO_SEED_TO_USE = 151
 DRONE_ID_CLOSE_TO_BS = SUMO_SEED_TO_USE
-CASE = "process_speed/slow"
+CASE = "request_interval/10"
 SUMO_CFG_PATH = "/home/onur/Coding/projects/sdnCaching/configs/besiktas-2/osm.sumocfg"
 
 USE_RECORD = False
@@ -65,9 +65,9 @@ VEHICLE_TYPE_PROPERTIES = {
           "priority": 0.3, "type_abbreviation": "T"},
     # Processors
     "A": {"type": "trailer", "shape": "truck/semitrailer", "color": "purple",
-          "process_speed": 5000, "queue_size": 100000, "type_abbreviation": "A"},
+          "process_speed": 2000, "queue_size": 100000, "type_abbreviation": "A"},
     "B": {"type": "bus", "shape": "bus", "color": "cyan",
-          "process_speed": 4000, "queue_size": 70000, "type_abbreviation": "B"},
+          "process_speed": 1500, "queue_size": 70000, "type_abbreviation": "B"},
     # Other
     "V": {"type": "vip", "shape": "vip", "color": "magenta", "type_abbreviation": "V"},
     "P": {"type": "private", "shape": "passenger/sedan", "color": "pink", "type_abbreviation": "P"},
@@ -125,7 +125,6 @@ BS_ID_OFFSET = 100
 BS_GROUND_RANGE = 18
 BS_GROUND_ANTENNA_GAIN = -5
 BS_GROUND_TX_POWER = 1
-BS_TX_POWER = 1
 ADD_DRONE_MN_HOST = False
 PLOT_MININET_GRAPH = False
 

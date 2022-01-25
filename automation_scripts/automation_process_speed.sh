@@ -1,9 +1,9 @@
-#python main.py -m AGGRESSIVE --seed-no 103
-#python clean.py
-#python main.py -m AGGRESSIVE --seed-no 104
-#python clean.py
-#python main.py -m AGGRESSIVE --seed-no 105
-#python clean.py
+python main.py -m AGGRESSIVE --seed-no 103
+python clean.py
+python main.py -m AGGRESSIVE --seed-no 104
+python clean.py
+python main.py -m AGGRESSIVE --seed-no 105
+python clean.py
 #python main.py -m AGGRESSIVE --seed-no 106
 #python clean.py
 #python main.py -m AGGRESSIVE --seed-no 107
