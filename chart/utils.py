@@ -135,7 +135,7 @@ def get_ratio_of_tasks_assigned_to_cloud(tasks):
     return task_counter / len(tasks)
 
 
-def get_category_delays(results):
+def get_category_delays(title, results):
     headers = ["Category-Method", "Average Penalty", "Task Failure Ratio", "Cloud Ratio", "Average Delay",
                "Average Pool Time", "Average Tx Time", "Average Queue Time", "Average Process Time"]
     rows = []
@@ -160,15 +160,15 @@ def get_category_delays(results):
         rows.sort(key=lambda x: int(x[0].split('-')[0]))
     else:
         rows.sort()
-    logging.info(f'\n{tabulate(rows, headers, tablefmt="pretty", stralign="left")}')
+    logging.info(f'{title}\n{tabulate(rows, headers, tablefmt="fancy_grid", stralign="left")}')
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, "INFO"), format="%(asctime)s %(levelname)s -> %(message)s")
 
     result_data = get_multiple_files(request_interval_file_list)
-    get_category_delays(result_data)
+    get_category_delays("Request Interval", result_data)
     result_data = get_multiple_files(vehicle_speed_file_list)
-    get_category_delays(result_data)
+    get_category_delays("Vehicle Speed", result_data)
     result_data = get_multiple_files(process_speed_file_list)
-    get_category_delays(result_data)
+    get_category_delays("Process Speed", result_data)

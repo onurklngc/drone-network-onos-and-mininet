@@ -4,7 +4,7 @@ WAIT_PREVIOUS_TASK_TO_BE_PROCESSED = False
 TASK_GENERATION_INTERVAL = 10
 SUMO_SEED_TO_USE = 151
 DRONE_ID_CLOSE_TO_BS = SUMO_SEED_TO_USE
-CASE = "request_interval/5"
+CASE = "vehicle_speed/20"
 SUMO_CFG_PATH = "/home/onur/Coding/projects/sdnCaching/configs/besiktas-2/osm.sumocfg"
 
 USE_RECORD = False
