@@ -13,8 +13,10 @@ class Solution:
     decisions = None
     score = None
     scores_by_decision = None
+    details = None
 
-    def __init__(self, decisions, score, scores_by_decision):
+    def __init__(self, decisions, score, scores_by_decision,details):
         self.decisions = decisions
         self.score = score
         self.scores_by_decision = scores_by_decision
+        self.details = details

@@ -120,7 +120,8 @@ def get_metrics():
     return current_info
 
 
-def post_host_location(host_ip, host_mac, switch_element_id, vlan="None", port=1, friendly_name=None):
+def post_host_location(host_ip, host_mac, switch_element_id, vlan="None", port=1, friendly_name=None,
+                       latitude=None, longitude=None):
     payload = {
         "id": f"{host_mac}/{vlan}",
         "mac": host_mac,
@@ -138,6 +139,10 @@ def post_host_location(host_ip, host_mac, switch_element_id, vlan="None", port=1
     }
     if friendly_name:
         payload["annotations"] = {"name": friendly_name}
+    if latitude:
+        payload["latitude"] = latitude
+    if longitude:
+        payload["longitude"] = longitude
 
     response = s.request("POST", HOSTS_URL, data=json.dumps(payload))
     logging.debug("RESPONSE post_host_location: %s" % response)

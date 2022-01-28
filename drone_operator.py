@@ -2,7 +2,6 @@ import logging
 
 import controller_utils
 import settings as s
-from actors.Simulation import Simulation
 from ap_name_converter import AccessPointNameConverter
 from drone_movement import DroneMover
 from manage_vehicle_connections import set_vehicle_as_changing_network, set_vehicle_as_disconnected
@@ -94,7 +93,8 @@ class DroneOperator(object):
             logging.info(f"{station.name} is getting connected to {connected_ap.name}")
             ap_of_name = self.ap_name_converter.get_of_name_by_name(connected_ap.name)
             controller_utils.post_host_location(station_interface.ip, station_interface.mac, ap_of_name,
-                                                friendly_name=f"{station.name}-{connected_ap.name}")
+                                                friendly_name=f"{station.name}-{connected_ap.name}",
+                                                longitude=station.position[0], latitude=station.position[1])
             self.associated_ap[station.name] = connected_ap.name
 
     def send_host_coordinates_on_controller(self, net):
