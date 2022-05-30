@@ -14,6 +14,7 @@ REQUEST_INTERVAL_FILE_LIST = {
     "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/request_interval/adaptive",
     "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/request_interval/aggressive",
     "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/request_interval/aggressive-wait",
+    "Only-Cloud": "/home/onur/Coding/projects/sdnCaching/results/request_interval/only-cloud",
 }
 VEHICLE_SPEED_FILE_LIST = {
     "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/vehicle_speed",
@@ -208,7 +209,7 @@ if __name__ == '__main__':
 
     result_data = get_multiple_files(REQUEST_INTERVAL_FILE_LIST)
     get_category_delays("Request Interval", result_data)
-    result_data = get_multiple_files(VEHICLE_SPEED_FILE_LIST)
-    get_category_delays("Vehicle Speed", result_data)
-    result_data = get_multiple_files(PROCESS_SPEED_FILE_LIST)
-    get_category_delays("Process Speed", result_data)
+    # result_data = get_multiple_files(VEHICLE_SPEED_FILE_LIST)
+    # get_category_delays("Vehicle Speed", result_data)
+    # result_data = get_multiple_files(PROCESS_SPEED_FILE_LIST)
+    # get_category_delays("Process Speed", result_data)

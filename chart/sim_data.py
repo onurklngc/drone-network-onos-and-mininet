@@ -1,5 +1,5 @@
-# 5-Optimum	5-Adaptive	5-Aggressive	5-Aggressive-Wait	10-Optimum	10-Adaptive	10-Aggressive	10-Aggressive-Wait	15-Optimum	15-Adaptive	15-Aggressive	15-Aggressive-Wait
-REQUEST_INTERVAL_PENALTY = "14.19	59.22	66.43	67.29	5.78	28.9	29.67	30.84	5.36	11.23	16.12	15.41"
+# 5-Optimum	5-Adaptive	5-Aggressive	5-Aggressive-Wait   5-Only-Cloud  10-Optimum	10-Adaptive	10-Aggressive	10-Aggressive-Wait  10-Only-Cloud	15-Optimum	15-Adaptive	15-Aggressive	15-Aggressive-Wait  15-Only-Cloud
+REQUEST_INTERVAL_PENALTY = "14.19	59.22	66.43	67.29	85.96	5.78	28.9	29.67	30.84	20.36	5.36	11.23	16.12	15.41	9.36"
 REQUEST_INTERVAL_CASES = ['5', '10', '15']
 REQUEST_INTERVAL_X_LABEL = "Request Interval (s)"
 
