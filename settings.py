@@ -66,8 +66,13 @@ VEHICLE_TYPE_PROPERTIES = {
     # Processors
     "A": {"type": "trailer", "shape": "truck/semitrailer", "color": "purple",
           "process_speed": 2000, "queue_size": 100000, "type_abbreviation": "A"},
+          # "process_speed": 5000, "queue_size": 100000, "type_abbreviation": "A"},
+          # "process_speed": 700, "queue_size": 100000, "type_abbreviation": "A"},
     "B": {"type": "bus", "shape": "bus", "color": "cyan",
           "process_speed": 1500, "queue_size": 70000, "type_abbreviation": "B"},
+          # "process_speed": 4000, "queue_size": 70000, "type_abbreviation": "B"},
+          # "process_speed": 500, "queue_size": 70000, "type_abbreviation": "B"},
+
     # Other
     "V": {"type": "vip", "shape": "vip", "color": "magenta", "type_abbreviation": "V"},
     "P": {"type": "private", "shape": "passenger/sedan", "color": "pink", "type_abbreviation": "P"},

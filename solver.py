@@ -11,7 +11,7 @@ from actors.Solution import Action, Solution
 from actors.Vehicle import ConnectionStatus
 from utils import read_pickle_file, get_link_speed_by_rssi, write_as_pickle
 
-record_file = ""
+record_file = "records/request_interval/10/lambda10_seed6"
 
 TIME_WINDOW = 600
 MAX_COMBINATION_TO_TRY_PER_WINDOW = 1000
@@ -506,5 +506,5 @@ if __name__ == '__main__':
         rows.append([current_task, solution[current_task_no], f"{scores[current_task_no]:.0f}"
                         , f"{real_penalties[current_task_no]:.0f}"])
     logging.info(f'Decisions: \n{tabulate(rows, headers, tablefmt="pretty", stralign="left")}')
-    solution_data = Solution(solution, total_score, scores,real_penalties)
+    solution_data = Solution(solution, total_score, scores, best_result_details)
     save_to_solution_file(solution_data, solution_filename)

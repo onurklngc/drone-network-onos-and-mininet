@@ -1,9 +1,7 @@
-numpy~=1.19.5
-matplotlib~=3.3.4
-requests~=2.25.1
-webcolors~=1.11.1
+numpy
+matplotlib
+requests
+webcolors
 
 beautifulsoup4~=4.10.0
-mininet~=2.3.0
-
-tabulate~=0.8.9
+tabulate

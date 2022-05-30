@@ -23,6 +23,7 @@ class AssignmentMethod(Enum):
     AGGRESSIVE = "AGGRESSIVE"
     ADAPTIVE = "ADAPTIVE"
     OPTIMUM = "OPTIMUM"
+    ONLY_CLOUD = "ONLY_CLOUD"
 
 
 class TaskProcessorMatching:
@@ -213,6 +214,8 @@ class TaskOrganizer:
             self.adaptive_assignment(current_time, processors_not_leaving_soon)
         elif AssignmentMethod(s.ASSIGNMENT_METHOD) == AssignmentMethod.OPTIMUM:
             self.assignment_from_solution(current_time)
+        elif AssignmentMethod(s.ASSIGNMENT_METHOD) == AssignmentMethod.ONLY_CLOUD:
+            pass
         else:
             logging.error("Wrong task assignment setting is set")
             sys.exit(1)
@@ -231,6 +234,8 @@ class TaskOrganizer:
                 is_assigned_to_cloud = True
             else:
                 is_assigned_to_cloud = False
+        elif AssignmentMethod(s.ASSIGNMENT_METHOD) == AssignmentMethod.ONLY_CLOUD:
+            is_assigned_to_cloud = True
         if is_assigned_to_cloud:
             task.set_assignment_to_cloud(current_time)
             self.assign_to_cloud(current_time, task)
