@@ -2,25 +2,35 @@ import glob
 import logging
 import pickle
 
+import numpy as np
 from tabulate import tabulate
 
 from actors.Task import Status
 
-request_interval_file_list = {
-    "Optimum": "/home/onur/Coding/projects/sdnCaching/results/request_interval/optimum",
+TABLE_FORMAT = "simple"
+
+REQUEST_INTERVAL_FILE_LIST = {
+    "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/request_interval",
     "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/request_interval/adaptive",
     "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/request_interval/aggressive",
     "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/request_interval/aggressive-wait",
 }
-vehicle_speed_file_list = {
+VEHICLE_SPEED_FILE_LIST = {
+    "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/vehicle_speed",
     "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed/adaptive",
     "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed/aggressive",
     "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed/aggressive-wait",
 }
-process_speed_file_list = {
+PROCESS_SPEED_FILE_LIST = {
+    "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/process_speed",
     "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/process_speed/adaptive",
     "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/process_speed/aggressive",
     "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/process_speed/aggressive-wait",
+}
+ORDERING = {
+    "process_speed": ["slow", "medium", "fast"],
+    "request_interval": ["5", "10", "15"],
+    "vehicle_speed": ["5", "20", "40"]
 }
 
 
@@ -45,14 +55,22 @@ def get_multiple_files(files):
 
 
 def get_specific_tasks(results, assignment_method, subsection_name):
-    adaptive5_results = results[assignment_method][subsection_name]
+    specific_results = results[assignment_method][subsection_name]
     tasks = []
-    for result in adaptive5_results:
-        tasks.extend(result["tasks"])
+    for result in specific_results:
+        tasks_by_run = result["tasks"] if isinstance(result, dict) else result.tasks
+        tasks.extend(tasks_by_run)
     return tasks
 
 
-def get_total_penalty(tasks):
+def get_prioritized_penalties(tasks):
+    penalties = []
+    for task in tasks:
+        penalties.append(task.get_prioritized_penalty())
+    return penalties
+
+
+def get_total_prioritized_penalty(tasks):
     total_penalty = 0
     for task in tasks:
         total_penalty += task.get_prioritized_penalty()
@@ -78,7 +96,7 @@ def get_completed_task_deadlines(tasks):
 def get_penalties(tasks):
     delays = []
     for task in tasks:
-        if task.status in [Status.COMPLETED, Status.PROCESSING]:
+        if task.status in [Status.COMPLETED]:
             delays.append(task.penalty)
     return delays
 
@@ -94,14 +112,17 @@ def get_average_system_times(tasks):
         if task.status in [Status.COMPLETED, Status.PROCESSING]:
             task_counter += 1
             pool_time = task.tx_start_time - task.start_time
-            tx_time = task.tx_end_time - task.start_time
+            tx_time = task.tx_end_time - task.tx_start_time
             queue_time = task.process_start_time - task.tx_end_time
             process_time = task.process_end_time - task.process_start_time
             total_pool_time += pool_time
             total_tx_time += tx_time
             total_queue_time += queue_time
             total_process_time += process_time
-            total_delay += task.end_time - task.start_time
+            task_delay = task.end_time - task.start_time
+            if task_delay < pool_time + tx_time + queue_time + process_time:
+                pass
+            total_delay += task_delay
     averages = {
         "average_delay": total_delay / task_counter,
         "average_pool_time": total_pool_time / task_counter,
@@ -112,10 +133,20 @@ def get_average_system_times(tasks):
     return averages
 
 
-def get_average_penalty(tasks):
-    total_penalty = get_total_penalty(tasks)
+def get_average_prioritized_penalties(tasks):
+    total_penalty = get_total_prioritized_penalty(tasks)
     average_penalty = total_penalty / len(tasks)
     return average_penalty
+
+
+def get_deadline_met_ratio(prioritized_penalties):
+    total = 0
+    counter_deadline_met = 0
+    for prioritized_penalty in prioritized_penalties:
+        total += 1
+        if prioritized_penalty == 0:
+            counter_deadline_met += 1
+    return counter_deadline_met / total
 
 
 def get_ratio_of_failed_tasks(tasks):
@@ -136,39 +167,48 @@ def get_ratio_of_tasks_assigned_to_cloud(tasks):
 
 
 def get_category_delays(title, results):
-    headers = ["Category-Method", "Average Penalty", "Task Failure Ratio", "Cloud Ratio", "Average Delay",
-               "Average Pool Time", "Average Tx Time", "Average Queue Time", "Average Process Time"]
+    headers = ["Category", "Method", "AveragePrioritizedPenalty", "Std_Prioritized_Penalty",  # "Deadline_met_ratio",
+               "Task_Failure_Ratio",
+               "Cloud_Ratio", "Average_Delay",
+               "Average_Pool_Time", "Average_Tx_Time", "Average_Queue_Time", "Average_Process_Time"]
     rows = []
-    isCategoryInt = True
+    is_category_int = True
     for method_name, method_data in results.items():
         for category, category_results in method_data.items():
-            isCategoryInt = category.isdigit()
+            is_category_int = category.isdigit()
             tasks = get_specific_tasks(results, method_name, category)
             if not tasks:
                 continue
-            avg_penalty = get_average_penalty(tasks)
+            prioritized_penalties = get_prioritized_penalties(tasks)
+            avg_prioritized_penalty = np.mean(prioritized_penalties)
+            std_prioritized_penalty = np.std(prioritized_penalties)
+            deadline_met_ratio = get_deadline_met_ratio(prioritized_penalties)
+
             ratio_of_failed_tasks = get_ratio_of_failed_tasks(tasks)
             ratio_of_tasks_assigned_to_cloud = get_ratio_of_tasks_assigned_to_cloud(tasks)
             delay_averages = get_average_system_times(tasks)
 
-            rows.append([f"{category}-{method_name}", f"{avg_penalty:.2f}", f"{ratio_of_failed_tasks:.3f}",
+            rows.append([method_name, category, f"{avg_prioritized_penalty:.2f}",
+                         f"{std_prioritized_penalty:.2f}",
+                         # f"{deadline_met_ratio:.3f}",
+                         f"{ratio_of_failed_tasks:.3f}",
                          f"{ratio_of_tasks_assigned_to_cloud:.3f}", f"{delay_averages['average_delay']:.2f}",
                          f"{delay_averages['average_pool_time']:.2f}", f"{delay_averages['average_tx_time']:.2f}",
                          f"{delay_averages['average_queue_time']:.0f}",
                          f"{delay_averages['average_process_time']:.2f}"])
-    if isCategoryInt:
-        rows.sort(key=lambda x: int(x[0].split('-')[0]))
+    if is_category_int:
+        rows.sort(key=lambda x: (x[0], int(x[1])))
     else:
-        rows.sort()
-    logging.info(f'{title}\n{tabulate(rows, headers, tablefmt="fancy_grid", stralign="left")}')
+        rows.sort(key=lambda x: (x[0], x[1]))
+    logging.info(f'{title}\n{tabulate(rows, headers, tablefmt=TABLE_FORMAT, stralign="left")}')
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, "INFO"), format="%(asctime)s %(levelname)s -> %(message)s")
 
-    result_data = get_multiple_files(request_interval_file_list)
+    result_data = get_multiple_files(REQUEST_INTERVAL_FILE_LIST)
     get_category_delays("Request Interval", result_data)
-    result_data = get_multiple_files(vehicle_speed_file_list)
+    result_data = get_multiple_files(VEHICLE_SPEED_FILE_LIST)
     get_category_delays("Vehicle Speed", result_data)
-    result_data = get_multiple_files(process_speed_file_list)
+    result_data = get_multiple_files(PROCESS_SPEED_FILE_LIST)
     get_category_delays("Process Speed", result_data)
