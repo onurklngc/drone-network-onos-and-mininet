@@ -14,7 +14,7 @@ from utils import read_pickle_file, get_link_speed_by_rssi, write_as_pickle
 record_file = "records/request_interval/10/lambda10_seed6"
 
 TIME_WINDOW = 600
-MAX_COMBINATION_TO_TRY_PER_WINDOW = 1000
+MAX_COMBINATION_TO_TRY_PER_WINDOW = 10000
 processor_records = {}
 generator_records = {}
 ap_records = {}

@@ -22,6 +22,14 @@ VEHICLE_SPEED_FILE_LIST = {
     "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed/aggressive",
     "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed/aggressive-wait",
 }
+VEHICLE_SPEED_V2_FILE_LIST = {
+    "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/vehicle_speed_v2",
+    "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v2/adaptive",
+    "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v2/aggressive",
+    "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v2/aggressive-wait",
+    "Only-Cloud": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v2/only-cloud",
+
+}
 PROCESS_SPEED_FILE_LIST = {
     "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/process_speed",
     "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/process_speed/adaptive",
@@ -207,7 +215,9 @@ def get_category_delays(title, results):
 if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, "INFO"), format="%(asctime)s %(levelname)s -> %(message)s")
 
-    result_data = get_multiple_files(REQUEST_INTERVAL_FILE_LIST)
+    result_data = get_multiple_files(VEHICLE_SPEED_V2_FILE_LIST)
+    get_category_delays("Vehicle Speed", result_data)
+    result_data = get_multiple_files(VEHICLE_SPEED_FILE_LIST)
     get_category_delays("Request Interval", result_data)
     # result_data = get_multiple_files(VEHICLE_SPEED_FILE_LIST)
     # get_category_delays("Vehicle Speed", result_data)
