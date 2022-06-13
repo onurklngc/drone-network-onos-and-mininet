@@ -78,7 +78,7 @@ class SumoManager(object):
         if len(self.vehicles_being_served) < s.NUMBER_OF_STATIONS:
             new_vehicle_class = select_vehicle_class(vehicle_id=vehicle_id, vehicle_records=self.vehicle_records)
         else:
-            logging.warning("Skipped car selection due to overload, assigning private")
+            logging.error("Skipped car selection due to overload, assigning private")
             new_vehicle_class = get_vehicle_data("P")
         traci.vehicle.setVehicleClass(vehicle_id, new_vehicle_class["type"])
         traci.vehicle.setShapeClass(vehicle_id, new_vehicle_class["shape"])

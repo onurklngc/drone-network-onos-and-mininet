@@ -11,7 +11,7 @@ from actors.Solution import Action, Solution
 from actors.Vehicle import ConnectionStatus
 from utils import read_pickle_file, get_link_speed_by_rssi, write_as_pickle
 
-record_file = "records/request_interval/10/lambda10_seed6"
+record_file = "records/vehicle_speed_v3/5/lambda5_seed2"
 
 TIME_WINDOW = 600
 MAX_COMBINATION_TO_TRY_PER_WINDOW = 10000
@@ -188,7 +188,7 @@ def get_estimated_tx_time_station_to_cloud(task_size, given_time, owner_object, 
 def get_estimated_tx_time_station_to_station(task_size, task_start_time, owner_object, processor_object, task_pair_bw,
                                              temp_earliest_next_task_start_tx_time, temp_traffics):
     tx_start_time = ceil(max(temp_earliest_next_task_start_tx_time[processor_object.sumo_id], task_start_time))
-    if processor_object.no_new_task_start_time <= tx_start_time:
+    if processor_object.no_new_task_start_time <= tx_start_time or processor_object.departure_time <= tx_start_time:
         return None, None
     if owner_object.departure_time <= tx_start_time:
         return None, None
