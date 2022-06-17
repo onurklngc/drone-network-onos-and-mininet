@@ -12,58 +12,59 @@ from actors.Vehicle import ConnectionStatus
 TABLE_FORMAT = "simple"
 
 REQUEST_INTERVAL_FILE_LIST = {
-    "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/request_interval",
-    "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/request_interval/adaptive",
-    "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/request_interval/aggressive",
-    "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/request_interval/aggressive-wait",
-    "Only-Cloud": "/home/onur/Coding/projects/sdnCaching/results/request_interval/only-cloud",
+    "Optimum": "solutions/request_interval",
+    "Adaptive": "results/request_interval/adaptive",
+    "Aggressive": "results/request_interval/aggressive",
+    "Aggressive-Wait": "results/request_interval/aggressive-wait",
+    "Only-Cloud": "results/request_interval/only-cloud",
 }
 VEHICLE_SPEED_FILE_LIST = {
-    "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/vehicle_speed",
-    "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed/adaptive",
-    "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed/aggressive",
-    "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed/aggressive-wait",
+    "Optimum": "solutions/vehicle_speed",
+    "Adaptive": "results/vehicle_speed/adaptive",
+    "Aggressive": "results/vehicle_speed/aggressive",
+    "Aggressive-Wait": "results/vehicle_speed/aggressive-wait",
 }
 VEHICLE_SPEED_V2_FILE_LIST = {
-    "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/vehicle_speed_v2",
-    "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v2/adaptive",
-    "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v2/aggressive",
-    "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v2/aggressive-wait",
-    "Only-Cloud": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v2/only-cloud",
+    "Optimum": "solutions/vehicle_speed_v2",
+    "Adaptive": "results/vehicle_speed_v2/adaptive",
+    "Aggressive": "results/vehicle_speed_v2/aggressive",
+    "Aggressive-Wait": "results/vehicle_speed_v2/aggressive-wait",
+    "Only-Cloud": "results/vehicle_speed_v2/only-cloud",
 }
 VEHICLE_SPEED_V3_FILE_LIST = {
-    "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/vehicle_speed_v3",
-    "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v3/adaptive",
-    "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v3/aggressive",
-    "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v3/aggressive-wait",
-    "Only-Cloud": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v3/only-cloud",
+    "Optimum": "solutions/vehicle_speed_v3",
+    "Adaptive": "results/vehicle_speed_v3/adaptive",
+    "Aggressive": "results/vehicle_speed_v3/aggressive",
+    "Aggressive-Wait": "results/vehicle_speed_v3/aggressive-wait",
+    "Only-Cloud": "results/vehicle_speed_v3/only-cloud",
 }
 VEHICLE_SPEED_V4_FILE_LIST = {
-    "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/vehicle_speed_v4",
-    "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v4/adaptive",
-    "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v4/aggressive",
-    "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v4/aggressive-wait",
-    "Only-Cloud": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v4/only-cloud",
+    "Optimum": "solutions/vehicle_speed_v4",
+    "Adaptive": "results/vehicle_speed_v4/adaptive",
+    "Aggressive": "results/vehicle_speed_v4/aggressive",
+    "Aggressive-Wait": "results/vehicle_speed_v4/aggressive-wait",
+    "Only-Cloud": "results/vehicle_speed_v4/only-cloud",
 }
 VEHICLE_SPEED_V5_FILE_LIST = {
-    "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/vehicle_speed_v5",
-    "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v5/adaptive",
-    "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v5/aggressive",
-    "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v5/aggressive-wait",
-    "Only-Cloud": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v5/only-cloud",
+    "Optimum": "solutions/vehicle_speed_v5",
+    "Adaptive": "results/vehicle_speed_v5/adaptive",
+    "Aggressive": "results/vehicle_speed_v5/aggressive",
+    "Aggressive-Wait": "results/vehicle_speed_v5/aggressive-wait",
+    "Only-Cloud": "results/vehicle_speed_v5/only-cloud",
 }
 VEHICLE_SPEED_V6_FILE_LIST = {
-    "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/vehicle_speed_v6",
-    "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v6/adaptive",
-    "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v6/aggressive",
-    "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v6/aggressive-wait",
-    "Only-Cloud": "/home/onur/Coding/projects/sdnCaching/results/vehicle_speed_v6/only-cloud",
+    "Optimum": "solutions/vehicle_speed_v6",
+    "Adaptive": "results/vehicle_speed_v6/adaptive",
+    "Aggressive": "results/vehicle_speed_v6/aggressive",
+    "Aggressive-Wait": "results/vehicle_speed_v6/aggressive-wait",
+    "Only-Cloud": "results/vehicle_speed_v6/only-cloud",
+    "Only-Cloud-single": "results/vehicle_speed_v6/only-cloud-single",
 }
 PROCESS_SPEED_FILE_LIST = {
-    "Optimum": "/home/onur/Coding/projects/sdnCaching/solutions/process_speed",
-    "Adaptive": "/home/onur/Coding/projects/sdnCaching/results/process_speed/adaptive",
-    "Aggressive": "/home/onur/Coding/projects/sdnCaching/results/process_speed/aggressive",
-    "Aggressive-Wait": "/home/onur/Coding/projects/sdnCaching/results/process_speed/aggressive-wait",
+    "Optimum": "solutions/process_speed",
+    "Adaptive": "results/process_speed/adaptive",
+    "Aggressive": "results/process_speed/aggressive",
+    "Aggressive-Wait": "results/process_speed/aggressive-wait",
 }
 ORDERING = {
     "process_speed": ["slow", "medium", "fast"],
@@ -324,17 +325,19 @@ if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, "INFO"), format="%(asctime)s %(levelname)s -> %(message)s")
     result_data = get_multiple_files(VEHICLE_SPEED_V6_FILE_LIST)
     get_category_delays("Vehicle Speed V6", result_data)
-    result_data = get_multiple_files(VEHICLE_SPEED_V5_FILE_LIST)
-    get_category_delays("Vehicle Speed V5", result_data)
-    result_data = get_multiple_files(VEHICLE_SPEED_V4_FILE_LIST)
-    get_category_delays("Vehicle Speed V4", result_data)
-    result_data = get_multiple_files(VEHICLE_SPEED_V3_FILE_LIST)
-    get_category_delays("Vehicle Speed V3", result_data)
-    result_data = get_multiple_files(VEHICLE_SPEED_V2_FILE_LIST)
-    get_category_delays("Vehicle Speed V2", result_data)
-    result_data = get_multiple_files(VEHICLE_SPEED_FILE_LIST)
-    get_category_delays("Vehicle Speed", result_data)
+    # result_data = get_multiple_files(VEHICLE_SPEED_V5_FILE_LIST)
+    # get_category_delays("Vehicle Speed V5", result_data)
+    # result_data = get_multiple_files(VEHICLE_SPEED_V4_FILE_LIST)
+    # get_category_delays("Vehicle Speed V4", result_data)
+    # result_data = get_multiple_files(VEHICLE_SPEED_V3_FILE_LIST)
+    # get_category_delays("Vehicle Speed V3", result_data)
+    # result_data = get_multiple_files(VEHICLE_SPEED_V2_FILE_LIST)
+    # get_category_delays("Vehicle Speed V2", result_data)
     # result_data = get_multiple_files(VEHICLE_SPEED_FILE_LIST)
     # get_category_delays("Vehicle Speed", result_data)
-    # result_data = get_multiple_files(PROCESS_SPEED_FILE_LIST)
-    # get_category_delays("Process Speed", result_data)
+    # result_data = get_multiple_files(VEHICLE_SPEED_FILE_LIST)
+    # get_category_delays("Vehicle Speed", result_data)
+    result_data = get_multiple_files(PROCESS_SPEED_FILE_LIST)
+    get_category_delays("Process Speed", result_data)
+    result_data = get_multiple_files(REQUEST_INTERVAL_FILE_LIST)
+    get_category_delays("Request Interval", result_data)

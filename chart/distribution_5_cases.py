@@ -3,10 +3,12 @@ from matplotlib import pyplot as plt
 
 from chart.constant import cb_color_cycle
 from chart.utils import get_multiple_files, get_specific_tasks, \
-    get_average_system_times, ORDERING, REQUEST_INTERVAL_FILE_LIST
+    get_average_system_times, ORDERING, REQUEST_INTERVAL_FILE_LIST, VEHICLE_SPEED_V6_FILE_LIST
 
-plt.rcParams["font.size"] = "34.5"
+plt.rcParams["font.size"] = "54"
+plt.rcParams["legend.fontsize"] = "54"
 tags = ["5 s", "10 s", "15 s"]
+tags = ["5", "20", "40"]
 
 
 # tags = ["5 km/h", "20km/h", "40km/h"]
@@ -47,7 +49,7 @@ def sub_plot(ax, penalty_data_list, method_name, plot_index, case_ordering):
     ax.bar(sub_x, queue_time, width, bottom=process_time + tx_time + pool,
            label=r'$\overline{t}_{queue}$', color=cb_color_cycle[3])
     for i in range(3):
-        ax.text(sub_x[i], total_delays[i], tags[i], ha="center", va="bottom", size=26.5)
+        ax.text(sub_x[i], total_delays[i], tags[i], ha="center", va="bottom", size=40)
     ax.set_ylabel('Average Delay (s)', size=50)
     print(method_name)
 
@@ -59,7 +61,7 @@ def plot(penalty_data_list, case_ordering):
     sub_plot(ax, penalty_data_list, "Aggressive", 2, case_ordering)
     sub_plot(ax, penalty_data_list, "Adaptive", 3, case_ordering)
     sub_plot(ax, penalty_data_list, "Optimum", 4, case_ordering)
-
+    plt.ylim([0, 280])
     plt.legend(
         [r'$\overline{t}_{tx}$', r'$\overline{t}_{process}$', r'$\overline{t}_{pool}$', r'$\overline{t}_{queue}$'])
     main_x = np.arange(5)
@@ -70,7 +72,7 @@ def plot(penalty_data_list, case_ordering):
 if __name__ == '__main__':
     result_data = get_multiple_files(REQUEST_INTERVAL_FILE_LIST)
     plot(result_data, ORDERING["request_interval"])
-    # result_data = get_multiple_files(VEHICLE_SPEED_FILE_LIST)
+    # result_data = get_multiple_files(VEHICLE_SPEED_V6_FILE_LIST)
     # plot(result_data, ORDERING["vehicle_speed"])
     # result_data = get_multiple_files(PROCESS_SPEED_FILE_LIST)
     # plot(result_data, ORDERING["process_speed"])

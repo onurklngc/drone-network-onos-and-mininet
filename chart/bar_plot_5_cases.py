@@ -4,7 +4,7 @@ import numpy as np
 from chart.constant import cb_color_cycle
 from sim_data import *
 
-SCENARIO = "request"
+SCENARIO = "vehicle_v6"
 values = easy_settings[SCENARIO]["values"].split("\t")
 options = easy_settings[SCENARIO]["case_names"]
 x_label = easy_settings[SCENARIO]["x_label"]
@@ -22,7 +22,7 @@ for i in range(3):
     agg_2.append(float(values[i * 5 + 2]))
     only_cloud.append(float(values[i * 5 + 4]))
 
-plt.rcParams["font.size"] = "36"
+plt.rcParams["font.size"] = "54"
 plt.rcParams["font.family"] = "Times"
 
 width = 0.18

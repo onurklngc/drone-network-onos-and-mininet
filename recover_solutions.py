@@ -1,7 +1,9 @@
 import argparse
 import itertools
 import logging
+import sys
 from math import ceil
+from os.path import exists
 
 import numpy as np
 from tabulate import tabulate
@@ -13,7 +15,7 @@ from actors.Task import Status
 from actors.Vehicle import ConnectionStatus
 from utils import read_pickle_file, get_link_speed_by_rssi, write_as_pickle
 
-record_file = "records/request_interval/5/lambda5_seed405"
+record_file = "records/vehicle_speed_v6/5/lambda8_seed4"
 
 TIME_WINDOW = 1000
 MAX_COMBINATION_TO_TRY_PER_WINDOW = 10000000
@@ -174,8 +176,11 @@ def get_estimated_tx_time_station_to_cloud(task_size, given_time, owner_object, 
     if tx_time + given_time > record.sim_end_time:
         return
     given_time += 2  # Connection delay
-    add_delay_to_previous_tasks(given_time, tx_time, ap_moment.associated_stations, [], ap_load,
+    extra_delay = add_delay_to_previous_tasks(given_time, tx_time, ap_moment.associated_stations, [], ap_load,
                                 load_on_cloud_on_time_t, is_cloud=True)
+    tx_time += extra_delay
+    if tx_time + given_time > record.sim_end_time:
+        return
     temp_traffics[given_time:tx_time + given_time][:, owner_object.index] += 1
     temp_traffics[given_time:tx_time + given_time][:, CLOUD] += 1
     temp_earliest_next_task_start_tx_time[CLOUD] = tx_time + given_time
@@ -216,11 +221,15 @@ def get_estimated_tx_time_station_to_station(task_size, task_start_time, owner_o
         return None, None
     tx_start_time += 3  # connection delay
     # tx_time += tx_start_time - task_start_time
-    add_delay_to_previous_tasks(tx_start_time, tx_time, generator_ap_moment.associated_stations,
+    extra_delay = add_delay_to_previous_tasks(tx_start_time, tx_time, generator_ap_moment.associated_stations,
                                 processor_ap_moment.associated_stations, generator_ap_load,
                                 processor_ap_load, is_cloud=True)
-    temp_traffics[task_start_time:tx_time + task_start_time][:, owner_object.index] += 1
-    temp_traffics[task_start_time:tx_time + task_start_time][:, processor_object.index] += 1
+    tx_time += extra_delay
+    tx_end_time = tx_time + task_start_time
+    if tx_end_time > record.sim_end_time:
+        return None, None
+    temp_traffics[task_start_time:tx_end_time][:, owner_object.index] += 1
+    temp_traffics[task_start_time:tx_end_time][:, processor_object.index] += 1
 
     logging.debug(f"Estimated tx time: {tx_time} to station")
     return tx_start_time, ceil(tx_time)
@@ -230,36 +239,43 @@ def add_delay_to_task(task_no, next_task_tx_start_time, load_level):
     task_details = temp_result_details[task_no]
     tx_end_time = task_details[0] + task_details[1]
     if task_details[1] > 300:
-        return
+        return 0
     if next_task_tx_start_time >= tx_end_time:
-        return
+        return 0
     extra_delay = (tx_end_time - next_task_tx_start_time) / max(load_level - 1, 1)
     task_details[1] += int(extra_delay)
+    return extra_delay
 
 
 def add_delay_to_previous_tasks(given_time, tx_time, src_stations, dest_stations, src_ap_load, dest_ap_load,
                                 is_cloud=False):
+    max_extra_delay = 0
+    extra_delay = 0
     for task_no, decision in enumerate(solution):
         task_owner = record.tasks[task_no].owner_sumo_id
         if decision == Action.SKIP:
             continue
         if task_owner in src_stations:
-            add_delay_to_task(task_no, given_time, src_ap_load)
+            extra_delay = add_delay_to_task(task_no, given_time, src_ap_load)
+            max_extra_delay = extra_delay
         if is_cloud and decision == Action.CLOUD:
-            add_delay_to_task(task_no, given_time, dest_ap_load)
+            extra_delay = add_delay_to_task(task_no, given_time, dest_ap_load)
         elif decision.sumo_id in dest_stations:
-            add_delay_to_task(task_no, given_time, dest_ap_load)
+            extra_delay = add_delay_to_task(task_no, given_time, dest_ap_load)
+        max_extra_delay = max(extra_delay, max_extra_delay)
     for decision_no in range(decision_index):
         previous_decision = current_combination[decision_no]
         task_owner = record.tasks[next_task_index + decision_no].owner_sumo_id
         if previous_decision == Action.SKIP:
             continue
         if task_owner in src_stations:
-            add_delay_to_task(next_task_index + decision_no, given_time, src_ap_load)
+            extra_delay = add_delay_to_task(next_task_index + decision_no, given_time, src_ap_load)
         if is_cloud and previous_decision == Action.CLOUD:
-            add_delay_to_task(next_task_index + decision_no, given_time, dest_ap_load)
+            extra_delay = add_delay_to_task(next_task_index + decision_no, given_time, dest_ap_load)
         elif previous_decision.sumo_id in dest_stations:
-            add_delay_to_task(next_task_index + decision_no, given_time, dest_ap_load)
+            extra_delay = add_delay_to_task(next_task_index + decision_no, given_time, dest_ap_load)
+        max_extra_delay = max(extra_delay, max_extra_delay)
+    return int(max_extra_delay)
 
 
 def get_penalty(task, details):
@@ -310,6 +326,8 @@ def evaluate_combination(best_total_prioritized_penalty, tasks_to_be_decided, co
     penalties_by_task = []
     estimated_tx_times = []
     for decision_index, task in enumerate(tasks_to_be_decided):
+        if decision_index > 50:
+            print("")
         owner_object = task.owner_object
         decision = combination[decision_index]
         if task.deadline >= owner_object.departure_time and decision != Action.SKIP:
@@ -492,6 +510,10 @@ if __name__ == '__main__':
     parse_cli_arguments()
     solution_filename = record_file.replace("record", "solution") + "_solution"
     broken_solution = solution_filename.replace("solutions", "solutions_broken")
+    broken_solution_file_exists = exists(broken_solution)
+    if not broken_solution_file_exists:
+        logging.warning(f"{broken_solution} doesn't exist.")
+        sys.exit(1)
     record = get_simulation_record(record_file, broken_solution)
     solution = []
     scores = []
