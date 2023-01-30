@@ -3,10 +3,10 @@ from matplotlib import pyplot as plt
 
 from chart.constant import cb_color_cycle
 from chart.utils import get_multiple_files, get_specific_tasks, \
-    get_average_system_times, ORDERING, REQUEST_INTERVAL_FILE_LIST, VEHICLE_SPEED_V6_FILE_LIST
+    get_average_system_times, ORDERING, VEHICLE_SPEED_V6_FILE_LIST
 
-plt.rcParams["font.size"] = "54"
-plt.rcParams["legend.fontsize"] = "54"
+plt.rcParams["font.size"] = "15"
+plt.rcParams["legend.fontsize"] = "11"
 tags = ["5 s", "10 s", "15 s"]
 tags = ["5\nkm/h", "20\nkm/h", "40\nkm/h"]
 
@@ -41,16 +41,17 @@ def sub_plot(ax, penalty_data_list, method_name, plot_index, case_ordering):
     pool = np.array(pool)
     queue_time = np.array(queue_time)
     sub_x = plot_index + np.array([-0.2, 0, 0.2])
-    ax.bar(sub_x, tx_time, width, label=r'$\overline{t}_{tx}$', color=cb_color_cycle[0], hatch='\\')
+    ax.bar(sub_x, tx_time, width, label=r'$\overline{t}_{tx}$', color=cb_color_cycle[0], hatch='\\', edgecolor='black')
     ax.bar(sub_x, process_time, width, bottom=tx_time, label=r'$\overline{t}_{process}$',
-           color=cb_color_cycle[1], hatch='o')
+           color=cb_color_cycle[1], hatch='o', edgecolor='black')
     ax.bar(sub_x, pool, width, bottom=process_time + tx_time, label=r'$\overline{t}_{pool}$',
-           color=cb_color_cycle[2], hatch='/')
+           color=cb_color_cycle[2], hatch='/', edgecolor='black')
     ax.bar(sub_x, queue_time, width, bottom=process_time + tx_time + pool,
-           label=r'$\overline{t}_{queue}$', color=cb_color_cycle[3])
-    for i in range(3):
-        ax.text(sub_x[i], total_delays[i], tags[i], ha="center", va="bottom", size=35)
-    ax.set_ylabel('Average Delay (s)', size=50)
+           label=r'$\overline{t}_{queue}$', color=cb_color_cycle[3], edgecolor='black')
+    ax.text(sub_x[0] - 0.031, total_delays[0], tags[0], ha="center", va="bottom", size=7)
+    ax.text(sub_x[1] - 0.025, total_delays[1], tags[1], ha="center", va="bottom", size=7)
+    ax.text(sub_x[2], total_delays[2], tags[2], ha="center", va="bottom", size=7)
+    ax.set_ylabel('Average Delay (s)', size=16)
     print(method_name)
 
 
@@ -65,7 +66,10 @@ def plot(penalty_data_list, case_ordering):
     plt.legend(
         [r'$\overline{t}_{tx}$', r'$\overline{t}_{process}$', r'$\overline{t}_{pool}$', r'$\overline{t}_{queue}$'])
     main_x = np.arange(5)
+    plt.grid(axis="y", alpha=0.4)
     plt.xticks(main_x, ['Only-Cloud', 'AGG-1', 'AGG-2', 'ADP', 'Q-OPT'])
+    plt.savefig(f"chart/plots/speed_vs_delay_distribution.pdf", dpi=300, bbox_inches='tight')
+    # plt.savefig(f"chart/plots/speed_vs_delay_distribution.png", dpi=300, bbox_inches='tight')
     plt.show()
 
 
